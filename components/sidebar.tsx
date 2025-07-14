@@ -205,7 +205,7 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
                 className="font-bold text-2xl text-zinc-900" 
                 style={{ lineHeight: '26px', marginTop: '-3px' }}
               >
-                start
+                AnamnesIA
               </span>
             </div>
             <Button
@@ -226,7 +226,7 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
             >
               <div className="flex items-center gap-2 w-full">
                 <Plus className="h-4 w-4" />
-                <span>New project</span>
+                <span>Novo projeto</span>
               </div>
             </Button>
           </div>
@@ -239,7 +239,7 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
                 className="flex items-center justify-between w-full px-1.5 py-1.5 text-sm font-bold text-stone-700 rounded-md"
                 onClick={toggleWorkspace}
               >
-                <span className="text-left">Workspace</span>
+                <span className="text-left">Espaço de trabalho</span>
                 <ChevronDown 
                   className={cn(
                     "h-4 w-4 transition-transform text-stone-500",
@@ -255,7 +255,7 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
                      onClick={() => router.push('/context')}
                    >
                      <div className="flex items-center gap-2 w-full text-left">
-                       <span>📖</span> <span>Context</span>
+                       <span>📖</span> <span>Contexto</span>
                      </div>
                    </Button>
 
@@ -270,7 +270,7 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
                 className="flex items-center justify-between w-full px-1.5 py-1.5 text-sm font-bold text-stone-700 rounded-md"
                 onClick={toggleHistory}
               >
-                <span className="text-left">History</span>
+                <span className="text-left">Histórico</span>
                 <ChevronDown 
                   className={cn(
                     "h-4 w-4 transition-transform text-stone-500",
@@ -293,7 +293,7 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
                   )}
                   {/* Empty State */}
                   {!isLoadingHistory && !historyError && chatHistory.length === 0 && (
-                    <p className="px-1.5 py-2 text-sm text-stone-500">No chat history yet.</p>
+                    <p className="px-1.5 py-2 text-sm text-stone-500">Sem histórico salvo.</p>
                   )}
                   {/* History List */}
                   {!isLoadingHistory && !historyError && chatHistory.map((chat) => (
@@ -343,7 +343,7 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
                   onClick={() => router.push('/pricing')}
                 >
                   <ArrowRight className="h-4 w-4" />
-                  <span>Upgrade Plan</span>
+                  <span>Melhorar meu plano</span>
                 </Button>
               </div>
             </>
@@ -352,10 +352,9 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
           {/* Social Feedback Section (Separator is now only rendered once) */}
           <Separator className="bg-stone-200"/>
           <div className="px-5 py-4">
-            <h3 className="text-sm font-medium text-stone-800 mb-3">Feedback? DM us!</h3>
+            <h3 className="text-sm font-medium text-stone-800 mb-3">Feedback? Conheça a Ei,Doc!</h3>
             <div className="space-y-2.5">
-              <SocialLink icon={XLogo} text="@wymi_" href="https://x.com/wymi_" />
-              <SocialLink icon={Mail} text="Contact us" href="mailto:feedback@example.com" /> 
+              <a className="text-sm font-small text-stone-800 mb-3" href="https://blog.eidoc.com.br">Nosso Blog</a> 
             </div>
           </div>
 
@@ -371,7 +370,7 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
                >
                  <div className="flex items-center gap-2 grow">
                    <User className="h-4 w-4 flex-shrink-0" />
-                   <span>Profile</span>
+                   <span>Perfil</span>
                    {/* Use PROP for tag */}
                    <span className="text-xs px-1.5 py-0.5 bg-stone-100 text-stone-500 rounded-full">
                      {activePlanName ? capitalizeFirstLetter(activePlanName) : 'Free'}
@@ -396,7 +395,7 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
                      }}
                    >
                      <Settings className="h-4 w-4" />
-                     <span>Settings</span>
+                     <span>Configurações</span>
                    </button>
                    <Separator className="my-1" />
                    <button 
@@ -404,7 +403,7 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
                      onClick={handleSignOut}
                    >
                      <LogOut className="h-4 w-4" />
-                     <span>Sign out</span>
+                     <span>Sair</span>
                    </button>
                  </div>
                )}

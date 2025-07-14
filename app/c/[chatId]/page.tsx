@@ -14,7 +14,7 @@ function ChatPageContent() {
 
   if (!chatId) {
     // Handle cases where chatId might be missing or an array (though unlikely here)
-    return <div>Error: Invalid or missing Chat ID.</div>;
+    return <div>Erro: ID de chat inválido ou inexistente.</div>;
   }
 
   return (

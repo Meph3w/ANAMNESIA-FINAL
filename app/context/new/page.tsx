@@ -80,7 +80,7 @@ export default function NewContextItemPage() {
                 disabled={isSubmitting || !name.trim() || !content.trim()}
                 className="h-8 px-4" 
             >
-               {isSubmitting ? "Saving..." : "Save"}
+               {isSubmitting ? "Salvando..." : "Salvar"}
             </Button>
         </div>
 
@@ -90,7 +90,7 @@ export default function NewContextItemPage() {
             <input
                  type="text"
                  id="context-name"
-                 placeholder="Untitled"
+                 placeholder="Sem título"
                  value={name}
                  onChange={(e) => setName(e.target.value)} // Standard input onChange
                  required
@@ -102,7 +102,7 @@ export default function NewContextItemPage() {
             {/* Content Textarea */} 
             <Textarea
                  id="context-content"
-                 placeholder="Start writing your context here... Type '/' for commands." 
+                 placeholder="Comece a escrever o seu contexto aqui... Digite '/' para comandos." 
                  value={content}
                  onChange={(e) => setContent(e.target.value)}
                  required
@@ -114,7 +114,7 @@ export default function NewContextItemPage() {
              {error && (
                <Alert variant="destructive" className="mt-6 text-sm p-3">
                   <ExclamationTriangleIcon className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
+                  <AlertTitle>Erro</AlertTitle>
                   <AlertDescription>{error}</AlertDescription>
                </Alert>
              )}

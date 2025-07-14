@@ -35,13 +35,13 @@ export default function EmailConfirmation() {
     <div className="h-screen w-full flex items-center justify-center bg-white">
       <div className="w-full max-w-md px-6 mx-auto -mt-16">
         <div className="text-center mb-8">
-          <h1 className="text-[32px] font-normal tracking-tight">Check your inbox</h1>
+          <h1 className="text-[32px] font-normal tracking-tight">Confira sua caixa de entrada</h1>
           <p className="mt-4 text-gray-600">
-            We sent a confirmation email to<br />
+            Enviamos o email de confirmação para<br />
             <span className="font-medium text-black">{email}</span>
           </p>
           <p className="mt-2 text-gray-600">
-            Click the link in the email to confirm your account
+            Clique no link que te enviamos para confirmar o seu email
           </p>
         </div>
 
@@ -56,7 +56,7 @@ export default function EmailConfirmation() {
             disabled={isSubmitting}
             className="w-full text-center text-zinc-900 hover:underline text-sm font-normal"
           >
-            Didn&apos;t receive an email? Send again
+            Não recebeu o email? Enviar novamente
           </button>
         </div>
       </div>

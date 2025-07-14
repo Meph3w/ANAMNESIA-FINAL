@@ -232,29 +232,27 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
 
   if (!isOpen) return null;
 
-  const displayPlanName = subscriptionDetails.planName ? capitalizeFirstLetter(subscriptionDetails.planName) : 'Free';
+  const displayPlanName = subscriptionDetails.planName ? capitalizeFirstLetter(subscriptionDetails.planName) : 'Basic - Trial';
   const isPaidPlan = !!subscriptionDetails.planName;
 
   const features = isPaidPlan ? [
-    "Everything in Free",
-    "Extended limits",
-    "Standard and advanced voice mode",
-    "Access to deep research",
-    "Create custom GPTs",
-    "Access to Sora (limited)",
-    "Early access to new features"
+    "Tudo no plano Basic",
+    "Limites extendidos",
+    "Modos de pesquisa avançados",
+    "Acesso a pesquisa aprofundada",
+    "Modelos avançados",
+    "Acesso antecipado"
   ] : [
-    "Basic chatbot features",
-    "Standard response speed",
-    "Community support"
+    "Acesso por 7 dias",
+    "Chat básico"
   ];
 
   const renderAccountContent = () => (
     <section aria-labelledby="account-heading" className="space-y-4">
-       <h2 id="account-heading" className="text-lg font-semibold text-gray-900">Account Information</h2>
+       <h2 id="account-heading" className="text-lg font-semibold text-gray-900">Informações da conta</h2>
        <dl className="space-y-3">
          <div className="flex justify-between">
-           <dt className="text-sm text-gray-600">Email address</dt>
+           <dt className="text-sm text-gray-600">Seu email</dt>
            <dd className="text-sm font-medium text-gray-800">{userEmail ?? '-'}</dd>
          </div>
        </dl>
@@ -265,13 +263,13 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
     <section aria-labelledby="subscription-heading" className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h2 id="subscription-heading" className="text-lg font-semibold text-gray-900">{displayPlanName} Plan</h2>
+          <h2 id="subscription-heading" className="text-lg font-semibold text-gray-900">Plano Anamnesia {displayPlanName}</h2>
           <p className="text-sm text-gray-500 mt-1">
             {isPaidPlan 
               ? subscriptionDetails.isCancelled 
                 ? `Plan cancelled. Access ends on ${subscriptionDetails.renewalDate || '[Date Unavailable]'}`
                 : `Your plan auto-renews on ${subscriptionDetails.renewalDate || '[Date Unavailable]'}`
-              : "Current plan details"}
+              : "Detalhes do plano atual"}
           </p>
         </div>
         {isPaidPlan && (
@@ -303,7 +301,7 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
                             className={`${ active ? 'bg-indigo-500 text-white' : 'text-gray-900' } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                           >
                              <ArrowUpCircle className="mr-2 h-5 w-5" aria-hidden="true" />
-                            Upgrade plan
+                            Melhorar plano
                           </button>
                         </Link>
                       )}
@@ -366,7 +364,7 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
       
       <div className="bg-gray-50 rounded-md p-4">
         <h3 className="text-sm font-medium text-gray-700 mb-3">
-          {isPaidPlan ? "Thanks for subscribing! Features include:" : "Your Free plan includes:"}
+          {isPaidPlan ? "Obrigado por se cadastrar!" : "O seu plano Basic inclui:"}
         </h3>
         <ul className="space-y-2">
           {features.map((feature, index) => (
@@ -405,9 +403,9 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
            <Spinner className="h-6 w-6" />
          </div>
        )}
-       <h2 id="models-heading" className="text-lg font-semibold text-gray-900">Model Names</h2>
+       <h2 id="models-heading" className="text-lg font-semibold text-gray-900">Modelos disponíveis</h2>
       <p className="text-sm text-gray-600 mb-6">
-        Select the Claude models you want to enable for use in the application.
+        Selecione os modelos que você deseja utilizar nas suas pesquisas.
       </p>
        {isLoadingModels ? (
          <div className="flex justify-center items-center py-8"><Spinner /></div>
@@ -442,7 +440,7 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={closeModal}>
       <div className="relative bg-white rounded-lg shadow-xl w-full max-w-3xl h-[75vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
-          <h1 className="text-xl font-semibold text-gray-900">Settings</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Configurações</h1>
           <Button variant="ghost" size="icon" onClick={closeModal} className="rounded-full">
             <X className="h-5 w-5" />
           </Button>
@@ -450,27 +448,27 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
 
         <Tabs defaultValue="account" className="flex flex-1 overflow-hidden">
           <TabsList className="h-auto flex flex-col justify-start items-start p-4 space-y-1 w-48 border-r border-gray-200 bg-gray-50/50 rounded-none">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Settings</h3>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Preferências</h3>
             <TabsTrigger 
               value="account" 
               className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-left justify-start data-[state=active]:bg-gray-200 data-[state=active]:text-gray-900 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             >
                <User className="h-5 w-5 flex-shrink-0" />
-               <span>Account</span>
+               <span>Minha conta</span>
             </TabsTrigger>
             <TabsTrigger 
               value="models" 
               className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-left justify-start data-[state=active]:bg-gray-200 data-[state=active]:text-gray-900 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             >
                <List className="h-5 w-5 flex-shrink-0" />
-               <span>Models</span>
+               <span>Modelos</span>
              </TabsTrigger>
             <TabsTrigger 
               value="subscription" 
               className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-left justify-start data-[state=active]:bg-gray-200 data-[state=active]:text-gray-900 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
              >
                <CreditCard className="h-5 w-5 flex-shrink-0" />
-               <span>Subscription</span>
+               <span>Assinatura</span>
              </TabsTrigger>
           </TabsList>
 

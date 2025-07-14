@@ -25,9 +25,9 @@ export const signInAction = async (formData: FormData) => {
     let errorMessage = error.message;
     
     if (error.message.includes("Invalid login credentials")) {
-      errorMessage = "We couldn't find an account with these credentials. Please double-check your email and password.";
+      errorMessage = "Não encontramos uma conta com essas credenciais. Por favor, verifique novamente seu email e senha.";
     } else if (error.message.includes("Email not confirmed")) {
-      errorMessage = "Your email hasn't been verified yet. Please check your inbox.";
+      errorMessage = "Seu email ainda não foi verificado. Por favor, verifique sua caixa de entrada.";
     }
     
     return encodedRedirect("error", "/sign-in", errorMessage);
@@ -37,7 +37,7 @@ export const signInAction = async (formData: FormData) => {
   const user = data.user;
   if (!user.email_confirmed_at) {
     // Email not confirmed, redirect to confirmation page
-    return encodedRedirect("success", `/confirmation?email=${encodeURIComponent(email)}`, "Please confirm your email to continue.");
+    return encodedRedirect("success", `/confirmation?email=${encodeURIComponent(email)}`, "Por favor, confirme seu email para continuar.");
   }
 
   // Revalidate the root path to refresh client state
@@ -65,9 +65,9 @@ export const signUpAction = async (formData: FormData) => {
     let errorMessage = error.message;
     
     if (error.message.includes("already registered")) {
-      errorMessage = "This email is already registered. Please sign in instead.";
+      errorMessage = "Este email já está registrado. Por favor, faça login.";
     } else if (error.message.includes("weak password")) {
-      errorMessage = "Please use a stronger password. It should be at least 6 characters long.";
+      errorMessage = "Por favor, use uma senha mais forte. Ela deve ter pelo menos 6 caracteres.";
     }
     
     return encodedRedirect("error", "/sign-up", errorMessage);
@@ -93,7 +93,7 @@ export async function createCheckout(priceId: string) {
   );
 
   if (error) {
-    throw new Error("Failed to create checkout session");
+    throw new Error("Ñão foi possível criar o seu Checkout. Tente novamente em alguns instantes.");
   }
 
   return redirect(data.url);
@@ -225,7 +225,7 @@ export async function cancelSubscriptionAction(subscriptionId: string): Promise<
 // Server Action to reactivate a subscription
 export async function reactivateSubscriptionAction(subscriptionId: string): Promise<{ success: boolean; error?: string }> {
   if (!subscriptionId) {
-    return { success: false, error: "Subscription ID is required." };
+    return { success: false, error: "ID da assinatura necessário." };
   }
   try {
     const updateClient = await createUpdateClient();
@@ -234,7 +234,7 @@ export async function reactivateSubscriptionAction(subscriptionId: string): Prom
     });
 
     if (error) {
-      console.error("Error reactivating subscription:", error);
+      console.error("Erro ao reativar sua assinatura:", error);
       return { success: false, error: error.message || "Failed to reactivate subscription." };
     }
 
@@ -989,7 +989,7 @@ export async function addContextItem(
 
     if (error) {
       console.error("Error inserting context item:", error);
-      return { success: false, error: "Failed to add context item." };
+      return { success: false, error: "Erro ao adicionar contexto." };
     }
 
     revalidatePath('/context'); // Revalidate the context page

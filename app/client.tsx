@@ -116,7 +116,7 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
                       lineHeight: '26px', 
                       marginTop: '-3px'
                     }}
-                  >start</span>
+                  >AnamnesIA</span>
                 </div>
               )}
             </div>
@@ -138,14 +138,14 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
                     <button 
                       className="relative inline-flex items-center justify-center gap-1 whitespace-nowrap transition-colors focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 hover:bg-stone-100 text-stone-900 active:bg-stone-200 px-4 py-2 h-10 rounded-full text-sm font-medium shadow-none"
                     >
-                      Sign up
+                      Criar conta
                     </button>
                   </Link>
                   <Link href="/sign-in">
                     <Button 
                       className="relative inline-flex items-center justify-center gap-1 whitespace-nowrap transition-colors focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-stone-900 text-stone-100 hover:bg-stone-800 px-4 py-2 h-10 rounded-full text-sm font-medium shadow-none" 
                     >
-                      Log in
+                      Logar agora
                     </Button>
                   </Link>
                 </div>

@@ -138,7 +138,7 @@ export default function ContextPage() {
   return (
     <div className="container max-w-5xl mx-auto py-10 px-4 md:px-6">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Manage Context</h1>
+        <h1 className="text-3xl font-bold">Gerenciar contexto</h1>
         <Button 
             onClick={handleGoToAddPage} 
             size="sm"
@@ -146,7 +146,7 @@ export default function ContextPage() {
             disabled={isAuthenticated === null}
         >
             <PlusCircle className="h-4 w-4" />
-            <span>Add New</span>
+            <span>Novo</span>
         </Button>
       </div>
 
@@ -161,7 +161,7 @@ export default function ContextPage() {
       {!isLoading && error && (
           <Alert variant="destructive">
             <ExclamationTriangleIcon className="h-4 w-4" />
-            <AlertTitle>Loading Error</AlertTitle>
+            <AlertTitle>Erro ao carregar</AlertTitle>
             <AlertDescription>{error || "Failed to load context items."}</AlertDescription>
           </Alert>
        )}
@@ -171,16 +171,16 @@ export default function ContextPage() {
             <TableHeader>
               <TableRow className="hover:bg-transparent border-b-stone-200">
                 <TableHead className="w-[40px] px-1 py-2"></TableHead>
-                <TableHead className="w-[30%] px-3 py-2 text-xs font-medium text-stone-500 uppercase tracking-wider">Name</TableHead>
-                <TableHead className="w-[45%] px-3 py-2 text-xs font-medium text-stone-500 uppercase tracking-wider">Content Snippet</TableHead>
-                <TableHead className="w-[20%] px-3 py-2 text-xs font-medium text-stone-500 uppercase tracking-wider">Last Updated</TableHead>
+                <TableHead className="w-[30%] px-3 py-2 text-xs font-medium text-stone-500 uppercase tracking-wider">Nome</TableHead>
+                <TableHead className="w-[45%] px-3 py-2 text-xs font-medium text-stone-500 uppercase tracking-wider">Conteúdo</TableHead>
+                <TableHead className="w-[20%] px-3 py-2 text-xs font-medium text-stone-500 uppercase tracking-wider">Atualizado em</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {items.length === 0 ? (
                 <TableRow className="border-none">
                   <TableCell colSpan={4} className="h-24 text-center text-stone-500">
-                    You haven&rsquo;t added any context items yet.
+                    Você ainda não tem contextos adicionados.
                   </TableCell>
                 </TableRow>
               ) : (

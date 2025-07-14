@@ -137,8 +137,8 @@ export default function PricingContent({
             className="w-[300px]"
           >
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="monthly">Monthly</TabsTrigger>
-              <TabsTrigger value="yearly">Yearly</TabsTrigger>
+              <TabsTrigger value="monthly">Mensal</TabsTrigger>
+              <TabsTrigger value="yearly">Anual</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -175,17 +175,17 @@ export default function PricingContent({
                       <div>
                         <h3 className="text-xl font-semibold text-gray-900">{product.name}</h3>
                         <p className="mt-2 text-sm text-gray-600 leading-relaxed">
-                          {product.description || "Get access to premium features and enhanced capabilities"}
+                          {product.description || "Garanta pelo valor de lançamento!"}
                         </p>
                       </div>
 
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-3xl font-bold text-gray-900">$</span>
+                        <span className="text-3xl font-bold text-gray-900">R$</span>
                         <span className="text-5xl font-bold text-gray-900">
                           {((price?.unit_amount || 0) / 100).toFixed(2)}
                         </span>
                         <span className="text-gray-600 ml-1">
-                          /{billingInterval === 'monthly' ? 'mo' : 'yr'}
+                          /{billingInterval === 'monthly' ? 'mês' : 'ano'}
                         </span>
                       </div>
 
@@ -212,7 +212,7 @@ export default function PricingContent({
                               disabled={isActionLoading}
                             >
                               {isActionLoading ? <Spinner className="mr-2 h-5 w-5 animate-spin" /> : <RefreshCcw className="mr-2 h-5 w-5" aria-hidden="true" />}
-                              Reactivate Subscription
+                              Reativar assinatura
                             </Button>
                           ) : (
                             <Button
@@ -239,7 +239,7 @@ export default function PricingContent({
                             {isLoadingThis ? (
                               <Spinner variant="primary" isLoading={true} />
                             ) : (
-                              isCurrent ? 'Current Plan' : 'Select Plan'
+                              isCurrent ? 'Seu plano atual' : 'Selecionar plano'
                             )}
                           </Button>
                         )}
@@ -247,19 +247,33 @@ export default function PricingContent({
 
                       <div className="space-y-3 pt-6 border-t border-gray-100 mt-6">
                         <p className="font-medium text-sm text-gray-900 mb-2">
-                          {product.name === 'Free' ? 'Includes:' : `Everything in ${product.name === 'Pro' ? 'Basic' : 'Free'}, plus:`}
-                        </p>
-                        {(product.name === 'Basic' ? ['Enhanced chatbot capabilities', 'Faster response times', 'Email support'] : product.name === 'Pro' ? ['Advanced AI models', 'Priority access to new features', 'Dedicated support'] : ['Standard chatbot features', 'Basic response speed', 'Community forum access']).map((feature) => (
-                          <div key={feature} className="flex items-center gap-3">
-                            <Check className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                            <span className="text-gray-600 text-sm">{feature}</span>
-                          </div>
-                        ))}
+                          {(() => {
+                            const planName = product.name.split(' ')[1]; // Extrai a parte do plano (Basic, Pro, Premium)
+                            return planName === 'Basic'
+                            ? 'Tudo no plano de teste, mais:'
+                            : `Tudo no plano Basic, mais:`;
+                        })()}
+                      </p>
+                      {(product.name.split(' ')[1] === 'Basic'
+                        ? ['Limite padrão de créditos', 'Mais contexto', 'Modelos padrão']
+                        : product.name.split(' ')[1] === 'Pro'
+                        ? ['20x mais limite', 'Modelos mais inteligentes', 'Modelos pré-treinados']
+                        : ['5x mais limite', 'Modelos mais inteligentes', 'Modelos pré-treinados']
+                      ).map((feature) => (
+                        <div key={feature} className="flex items-center gap-3">
+                          <Check className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                          <span className="text-gray-600 text-sm">{feature}</span>
+                        </div>
+                       ))}
                       </div>
+
+
+
+
 
                       <div className="pt-4 text-center">
                         <span className="text-sm text-gray-500">
-                          {billingInterval === 'yearly' ? 'Save 20% with annual billing' : 'Try free for 14 days'}
+                          {billingInterval === 'yearly' ? 'Dois meses grátis no plano anual!' : 'Teste gratuitamente por 7 dias'}
                         </span>
                       </div>
                     </div>

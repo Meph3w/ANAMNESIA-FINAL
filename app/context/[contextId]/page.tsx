@@ -181,7 +181,7 @@ export default function ContextDetailPage() {
 
             <Textarea
                  id="context-content"
-                 placeholder="Start writing your context here... Type '/' for commands." 
+                 placeholder=" Comece a digitar seu contexto aqui... Digite '/' para comandos." 
                  value={editableContent}
                  onChange={handleContentChange}
                  required

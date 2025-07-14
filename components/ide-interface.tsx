@@ -37,12 +37,12 @@ const getDisplayName = (id: string | null): string | null => {
 };
 
 const placeholderPrompts = [
-  "how can I implement a chatbot for my website?",
-  "explain how to create a personalized customer service bot",
-  "what are the best practices for chatbot conversation design?",
-  "how do I integrate this chatbot with my existing website?",
-  "give me ideas for implementing proactive chat suggestions",
-  "what features should I add to my support chatbot?"
+"Como posso monitorar os sintomas dos pacientes de forma mais eficiente?",
+"Como criar planos de tratamento mais personalizados para meus pacientes?",
+"Como melhorar a precisão dos meus diagnósticos?",
+"Como otimizar o agendamento e gestão das consultas?",
+"Como oferecer recomendações de saúde mais rápidas e precisas aos meus pacientes?",
+"O que posso adicionar ao meu sistema para agilizar o atendimento médico?",
 ];
 
 export function IdeInterfaceComponent() {
@@ -385,10 +385,10 @@ export function IdeInterfaceComponent() {
             <h1 
               className="text-center font-serif font-medium mb-4 text-[clamp(42px,5vw,62px)] leading-[1.1] text-gray-900"
             >
-              Build custom chatbots
+              AnamnesIA
             </h1>
             <p className="text-stone-900 text-center mb-16 text-lg">
-              Start with our template and customize to fit your needs
+               Chat médico de alta qualidade baseado em IA - Comece agora!
             </p>
           </section>
           <div className="w-full mx-auto relative max-w-[710px] rounded-2xl border border-gray-200 bg-[#f3f4f6] overflow-hidden mb-12 shadow-sm">
@@ -397,7 +397,7 @@ export function IdeInterfaceComponent() {
                 <textarea
                   ref={textareaRef}
                   className="w-full resize-none text-base focus:outline-none text-stone-900 placeholder:text-gray-500 bg-transparent px-5 py-3 min-h-[48px] max-h-[360px] pr-10"
-                  placeholder={currentPlaceholder || "Ask anything..."}
+                  placeholder={currentPlaceholder || "Pergunte qualquer coisa..."}
                   value={prompt}
                   onChange={handlePromptChange}
                   onKeyDown={handleTextareaKeyDown}
@@ -547,7 +547,7 @@ export function IdeInterfaceComponent() {
           <section className="w-full text-center mt-16" aria-labelledby="prompt-suggestions">
             <div className="flex flex-wrap gap-4 items-center justify-center">
               <h2 id="prompt-suggestions" className="text-gray-800 text-sm whitespace-nowrap">
-                Try these prompts:
+                Tente começar com esses prompts:
               </h2>
               <div className="flex flex-wrap gap-2 justify-center">
                 <Button 
@@ -555,55 +555,22 @@ export function IdeInterfaceComponent() {
                   size="sm" 
                   className="rounded-full bg-white border-gray-200 text-gray-800"
                   onClick={() => {
-                    setPrompt("customer support");
+                    setPrompt("Como diagnosticar Hipertensão Arterial no consultório?");
                     setShowTabButton(false);
                   }}
                 >
-                  customer support
+                  Como diagnosticar Hipertensão Arterial no consultório?
                 </Button>
                 <Button 
                   variant="outline" 
                   size="sm" 
                   className="rounded-full bg-white border-gray-200 text-gray-800"
                   onClick={() => {
-                    setPrompt("integration guide");
+                    setPrompt("Como tratar a crise de asma na urgência?");
                     setShowTabButton(false);
                   }}
                 >
-                  integration guide
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="rounded-full bg-white border-gray-200 text-gray-800"
-                  onClick={() => {
-                    setPrompt("conversation flows");
-                    setShowTabButton(false);
-                  }}
-                >
-                  conversation flows
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="rounded-full bg-white border-gray-200 text-gray-800"
-                  onClick={() => {
-                    setPrompt("AI capabilities");
-                    setShowTabButton(false);
-                  }}
-                >
-                  AI capabilities
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="rounded-full bg-white border-gray-200 text-gray-800"
-                  onClick={() => {
-                    setPrompt("setup tutorial");
-                    setShowTabButton(false);
-                  }}
-                >
-                  setup tutorial
+                  Como tratar a crise de asma na urgência?
                 </Button>
               </div>
             </div>

@@ -6,8 +6,8 @@ import { ClientLayout } from "./client";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Chat App",
-  description: "A modern chat application",
+  title: "AnamnesIA",
+  description: "Chat Médico com IA - De médico para médico",
 };
 
 export default function RootLayout({

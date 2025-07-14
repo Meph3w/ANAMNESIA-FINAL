@@ -23,7 +23,7 @@ export default async function PricingPage() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[400px] text-red-600">
-        There was an error loading products. Please try again.
+        Erro ao carregar os planos. Tente novamente.
       </div>
     );
   }
@@ -37,7 +37,7 @@ export default async function PricingPage() {
   return (
     <div className="max-w-[1200px] mx-auto px-6 py-16">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-medium mb-4">Upgrade your plan</h1>
+        <h1 className="text-4xl font-medium mb-4">Faça upgrade no seu plano</h1>
       </div>
 
       <PricingContent
