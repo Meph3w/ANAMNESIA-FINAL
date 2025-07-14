@@ -4,6 +4,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, Check, ArrowUpCircle, XCircle, LayoutGrid, RefreshCcw, User, CreditCard, List } from 'lucide-react';
 import { createSupabaseClient } from '@/utils/supabase/client';
+import { createClient } from "@updatedev/js";
 import { 
   getSubscriptionDetails, 
   cancelSubscriptionAction, 
@@ -25,6 +26,19 @@ interface SettingsModalProps {
   onSettingsChanged?: () => void;
 }
 
+// Função para criar o cliente Update.dev
+export async function createUpdateClient() {
+  return createClient(process.env.NEXT_PUBLIC_UPDATE_PUBLISHABLE_KEY!, {
+    getSessionToken: async () => {
+      const supabase = createSupabaseClient();
+      const { data } = await supabase.auth.getSession();
+      if (data.session == null) return;
+      return data.session.access_token;  // Token de sessão do Supabase
+    },
+  });
+}
+
+
 // Extend state type for subscription details
 interface SubscriptionDetailsState {
   planName: string | null;
@@ -43,12 +57,9 @@ interface ModelSetting {
 }
 
 // Define the available models with display names
-const availableClaudeModels: Omit<ModelSetting, 'enabled'>[] = [
-  { id: 'claude-3-7-sonnet-20250219', name: 'claude-3-7-sonnet-20250219', displayName: 'Claude 3.7 Sonnet' },
-  { id: 'claude-3-opus-20240229', name: 'claude-3-opus-20240229', displayName: 'Claude 3 Opus' }, 
-  { id: 'claude-3-5-sonnet-20240620', name: 'claude-3-5-sonnet-20240620', displayName: 'Claude 3.5 Sonnet' },
-  { id: 'claude-3-sonnet-20240229', name: 'claude-3-sonnet-20240229', displayName: 'Claude 3 Sonnet' },
-  { id: 'claude-3-haiku-20240307', name: 'claude-3-haiku-20240307', displayName: 'Claude 3 Haiku' },
+const availableModels: Omit<ModelSetting, 'enabled'>[] = [
+  { id: 'gpt-4o-mini', name: 'MedGPT - Padrão', displayName: 'MedGPT - Padrão' },
+  { id: 'gpt-4o', name: 'MedGPT R+ - Alta precisão', displayName: 'MedGPT R+ - Alta precisão' },
   // Add other valid models as needed, remove invalid ones like 'claude-3.7-sonnet'
   // { id: 'claude-3-sonnet-20240229', name: 'claude-3-sonnet-20240229' }, 
 ];
@@ -103,12 +114,13 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
 
           console.log("[MODAL LOG] Received userSettings from action:", userSettings);
           
+      
           setUserEmail(user?.email ?? null);
           setSubscriptionDetails(subscriptionData);
           
           // Initialize models state using the correct field from the settings object
           setModels(
-            availableClaudeModels.map(model => ({
+            availableModels.map(model => ({
               ...model,
               enabled: userSettings.enabledModels.includes(model.id)
             }))
@@ -117,9 +129,9 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
         } catch (error) {
           console.error("Error fetching settings data:", error);
           // Define fallback settings locally
-          const fallbackEnabled = ['claude-3.5-sonnet', 'claude-3.7-sonnet', 'claude-3.7-sonnet-max'];
+          const fallbackEnabled = ['gpt-4o-mini', 'gpt-4o'];
           setModels(
-             availableClaudeModels.map(model => ({
+             availableModels.map(model => ({
               ...model,
               enabled: fallbackEnabled.includes(model.id) // Use the local fallback array
             }))
@@ -190,7 +202,7 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
       if (result.success) {
         const details = await getSubscriptionDetails();
         setSubscriptionDetails(details);
-        setCancelSuccessMessage("Subscription cancellation scheduled.");
+        setCancelSuccessMessage("Cencelamento de assinatura agendado.");
       } else {
         setCancelError(result.error || "Failed to cancel subscription.");
       }
@@ -232,7 +244,7 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
 
   if (!isOpen) return null;
 
-  const displayPlanName = subscriptionDetails.planName ? capitalizeFirstLetter(subscriptionDetails.planName) : 'Basic - Trial';
+  const displayPlanName = subscriptionDetails.planName ? capitalizeFirstLetter(subscriptionDetails.planName) : 'Basic - Teste gratuito';
   const isPaidPlan = !!subscriptionDetails.planName;
 
   const features = isPaidPlan ? [
@@ -250,11 +262,12 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
   const renderAccountContent = () => (
     <section aria-labelledby="account-heading" className="space-y-4">
        <h2 id="account-heading" className="text-lg font-semibold text-gray-900">Informações da conta</h2>
+       
        <dl className="space-y-3">
-         <div className="flex justify-between">
-           <dt className="text-sm text-gray-600">Seu email</dt>
-           <dd className="text-sm font-medium text-gray-800">{userEmail ?? '-'}</dd>
-         </div>
+        <div className="flex justify-between">
+        <dt className="text-sm text-gray-600">Seu email</dt>
+        <dd className="text-sm font-medium text-gray-800">{userEmail ?? '-'}</dd>
+        </div>
        </dl>
     </section>
   );
@@ -267,8 +280,8 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
           <p className="text-sm text-gray-500 mt-1">
             {isPaidPlan 
               ? subscriptionDetails.isCancelled 
-                ? `Plan cancelled. Access ends on ${subscriptionDetails.renewalDate || '[Date Unavailable]'}`
-                : `Your plan auto-renews on ${subscriptionDetails.renewalDate || '[Date Unavailable]'}`
+                ? `Plano Cancelado. Seu acesso se encerra em ${subscriptionDetails.renewalDate || '[Date Unavailable]'}`
+                : `Seu plano renova em ${subscriptionDetails.renewalDate || '[Date Unavailable]'}`
               : "Detalhes do plano atual"}
           </p>
         </div>
@@ -277,7 +290,7 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
             <div>
               <Menu.Button as={Fragment}>
                 <Button variant="outline" size="sm">
-                  Manage
+                  Gerenciar
                 </Button>
               </Menu.Button>
             </div>
@@ -321,7 +334,7 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
                             ) : (
                               <RefreshCcw className="mr-2 h-5 w-5" aria-hidden="true" />
                             )}
-                            Reactivate Subscription
+                            Reativar assinatura
                           </button>
                         ) : (
                           <button
@@ -334,7 +347,7 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
                             ) : (
                               <XCircle className="mr-2 h-5 w-5" aria-hidden="true" />
                             )}
-                            Cancel Subscription
+                            Cancelar assinatura
                           </button>
                         )
                       )}
@@ -350,7 +363,7 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
                             className={`${ active ? 'bg-gray-100 text-gray-900' : 'text-gray-700' } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                           >
                             <LayoutGrid className="mr-2 h-5 w-5" aria-hidden="true" />
-                            View Plans
+                            Ver planos
                           </button>
                       </Link>
                     )}
@@ -432,7 +445,7 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
           ))}
          </div>
        )}
-       {modelSaveError && <p className="mt-4 text-sm text-red-600">Error: {modelSaveError}</p>}
+       {modelSaveError && <p className="mt-4 text-sm text-red-600">Erro: {modelSaveError}</p>}
     </section>
   );
 

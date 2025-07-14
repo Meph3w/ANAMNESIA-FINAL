@@ -38,15 +38,15 @@ export function DeleteConfirmationModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Delete Item</DialogTitle>
+          <DialogTitle>Deletar item</DialogTitle>
           <DialogDescription>
-            Permanently delete &ldquo;{itemTitle || 'this item'}&rdquo;? This cannot be undone.
+            Apagar para sempre &ldquo;{itemTitle || 'this item'}&rdquo;? Isso não pode ser desfeito.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline" disabled={isDeleting}>
-              Cancel
+              Cancelar
             </Button>
           </DialogClose>
           <Button 
@@ -54,7 +54,7 @@ export function DeleteConfirmationModal({
             onClick={onConfirmDelete} 
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {isDeleting ? "Deletando..." : "Deletar"}
           </Button>
         </DialogFooter>
       </DialogContent>

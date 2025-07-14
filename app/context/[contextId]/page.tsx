@@ -127,12 +127,12 @@ export default function ContextDetailPage() {
             <div className="container max-w-3xl mx-auto py-10 px-4 md:px-6">
                  <Button variant="outline" size="sm" onClick={() => router.back()} className="mb-4 flex items-center gap-1">
                     <ArrowLeftIcon />
-                    Back
+                    Voltar
                  </Button>
                  <Alert variant="destructive">
                     <ExclamationTriangleIcon className="h-4 w-4" />
                     <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{error || "Context item not found."}</AlertDescription>
+                    <AlertDescription>{error || "Contexto não encontrado."}</AlertDescription>
                  </Alert>
             </div>
         );
@@ -143,7 +143,7 @@ export default function ContextDetailPage() {
             <div className="flex justify-between items-center mb-8">
                 <Button variant="ghost" size="sm" onClick={() => router.back()} className="inline-flex items-center gap-1 text-stone-600 hover:text-stone-900 px-2">
                     <ArrowLeftIcon className="h-4 w-4"/>
-                    <span>Back</span>
+                    <span>Voltar</span>
                 </Button>
                 <Button 
                     size="sm"
@@ -151,7 +151,7 @@ export default function ContextDetailPage() {
                     disabled={!isDirty || isSaving || !editableName.trim() || !editableContent.trim()}
                     className="h-8 px-4"
                 >
-                   {isSaving ? "Saving..." : "Save"}
+                   {isSaving ? "Salvando..." : "Salvar"}
                 </Button>
             </div>
 
@@ -169,12 +169,12 @@ export default function ContextDetailPage() {
              <div className="flex flex-col sm:flex-row gap-x-6 gap-y-2 text-sm text-stone-500 mb-8 border-y border-stone-100 py-3">
                  <div className="flex items-center gap-1.5">
                      <CalendarIcon className="h-4 w-4" />
-                     <span>Created:</span>
+                     <span>Criado:</span>
                      <span className="font-medium text-stone-700">{formatDate(item.created_at)}</span>
                  </div>
                  <div className="flex items-center gap-1.5">
                      <ClockIcon className="h-4 w-4" />
-                     <span>Updated:</span>
+                     <span>Atualizado:</span>
                      <span className="font-medium text-stone-700">{formatDate(item.updated_at)}</span>
                  </div>
              </div>
@@ -192,7 +192,7 @@ export default function ContextDetailPage() {
              {error && !isLoading && (
                 <Alert variant="destructive" className="mt-6 text-sm p-3">
                     <ExclamationTriangleIcon className="h-4 w-4" />
-                    <AlertTitle>Save Error</AlertTitle>
+                    <AlertTitle>Salvar erro</AlertTitle>
                     <AlertDescription>{error}</AlertDescription>
                 </Alert>
              )}

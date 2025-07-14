@@ -2,16 +2,35 @@ import { createUpdateClient } from "@/utils/update/server";
 
 export async function POST() {
   const client = await createUpdateClient();
-  const { data, error } = await client.entitlements.check("premium");
+  const subscriptionTypes = ["pro", "premium", "basic"];
 
-  if (error || !data.hasAccess) {
+  let hasAccess = false;
+  let error = null;
+
+  // Verifica cada tipo de assinatura até encontrar uma ativa
+  for (const subType of subscriptionTypes) {
+    const { data, error: subError } = await client.entitlements.check(subType);
+    if (subError) {
+      error = subError;
+      break; // Sai do loop se houver erro
+    }
+    if (data.hasAccess) {
+      hasAccess = true;
+      break; // Sai do loop se encontrar uma assinatura ativa
+    }
+  }
+
+  // Retorna erro 500 se houve falha na verificação
+  if (error) {
     return new Response("Error fetching subscriptions", { status: 500 });
   }
 
-  if (!data.hasAccess) {
-    return new Response("Subscription not active", { status: 403 });
+  // Retorna erro 403 se nenhuma assinatura está ativa
+  if (!hasAccess) {
+    return new Response("Sem assinaturas ativas (pro, premium, ou basic)", { status: 403 });
   }
 
+  // Prossegue com a chamada à The Cat API se houver acesso
   const response = await fetch("https://api.thecatapi.com/v1/images/search");
   const json = await response.json();
   return new Response(JSON.stringify(json));

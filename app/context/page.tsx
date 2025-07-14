@@ -122,11 +122,11 @@ export default function ContextPage() {
         toast.success(`Item "${itemToDelete.name}" deleted.`);
         // No redirect needed here as we are on the list page
       } else {
-        throw new Error(result.error || "Failed to delete item.");
+        throw new Error(result.error || "Erro ao deletar o item.");
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "An unexpected error occurred.";
-      console.error("Error deleting context item:", error);
+      const message = error instanceof Error ? error.message : "Um erro inesperado ocorreu.";
+      console.error("Erro ao deletar contexto:", error);
       toast.error(message);
       setError(message); // Show error in list page if needed
     } finally {

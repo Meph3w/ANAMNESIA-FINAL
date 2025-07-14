@@ -90,16 +90,16 @@ export function ContextSelectorModal({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Context to Prompt</DialogTitle>
+          <DialogTitle>Adicionar contexto</DialogTitle>
           <DialogDescription>
-            Select a context item or click the selected item again to remove it.
+            Selecione um contexto ou clique novamente para excluir.
           </DialogDescription>
         </DialogHeader>
         
         <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
             <Input
-              placeholder="Search context items..."
+              placeholder="Pesquisar itens de contexto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-8"
@@ -122,7 +122,7 @@ export function ContextSelectorModal({
           )}
           {!isLoading && !error && items.length === 0 && (
             <p className="text-center text-stone-500 text-sm py-4">
-              No context items found. Add some on the Context page.
+             Sem contextos encontrados. Adicione novos na página contexto.
             </p>
           )}
           {!isLoading && !error && items.length > 0 && (
@@ -130,26 +130,29 @@ export function ContextSelectorModal({
               <div className="p-2 space-y-1">
                 {filteredItems.length > 0 ? (
                   filteredItems.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setSelectedItemId(item.id === selectedItemId ? null : item.id)}
-                      className={`w-full flex items-center justify-between text-left p-2 rounded-md text-sm transition-colors ${ selectedItemId === item.id 
-                          ? 'bg-stone-100 ring-1 ring-stone-300' 
-                          : 'hover:bg-stone-50'
+                
+              <button
+                key={item.id}
+                  onClick={() => setSelectedItemId(item.id === selectedItemId ? null : item.id)}
+                    className={`w-full flex items-center justify-between text-left p-2 rounded-md text-sm transition-colors ${
+                    selectedItemId === item.id ? 'bg-stone-100 ring-1 ring-stone-300' : 'hover:bg-stone-50'
                       }`}
-                    >
-                      <div className="flex-1 overflow-hidden">
+                      >
+                      <div className="flex-1 overflow-hidden max-w-[400px]">
                         <p className="font-medium text-stone-800 truncate">{item.name}</p>
-                        <p className="text-stone-500 truncate mt-0.5">{item.content}</p>
+                        <p className="text-stone-500 mt-0.5 break-words whitespace-normal max-w-full">
+                          {item.content.length > 300 ? item.content.slice(0, 300) + '...' : item.content}
+                        </p>
                       </div>
-                      {selectedItemId === item.id && (
-                        <Check className="h-4 w-4 text-black ml-2 flex-shrink-0" strokeWidth={2} />
-                      )}
-                    </button>
+                    {selectedItemId === item.id && (
+                  <Check className="h-4 w-4 text-black ml-2 flex-shrink-0" strokeWidth={2} />
+                )}
+              </button>
+
                   ))
                 ) : (
                    <p className="text-center text-stone-500 text-sm py-4">
-                    No items match your search.
+                    Nenhum item corresponde à sua pesquisa.
                   </p>
                 )}
               </div>
@@ -159,13 +162,13 @@ export function ContextSelectorModal({
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">Cancelar</Button>
           </DialogClose>
           <Button 
             onClick={handleConfirmAdd}
             disabled={isLoading || !hasChanged}
           >
-            {selectedItemId ? "Add Selected Context" : attachedContextItemId ? "Remove Context" : "Select Context"}
+            {selectedItemId ? "Adicionar contexto selecionado" : attachedContextItemId ? "Remover contexto" : "Selecionar context"}
           </Button>
         </DialogFooter>
       </DialogContent>

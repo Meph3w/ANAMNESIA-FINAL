@@ -39,14 +39,14 @@ export default function NewContextItemPage() {
     try {
       const result = await addContextItem(name, content);
       if (result.success && result.newItem) {
-        toast.success(`Context item "${result.newItem.name}" added!`);
+        toast.success(`Contexto "${result.newItem.name}" adicionado!`);
         router.push('/context');
       } else {
-        throw new Error(result.error || "Failed to add item.");
+        throw new Error(result.error || "Falha ao adicionar item.");
       }
     } catch (err: unknown) {
-      console.error("Add context item error:", err);
-      const errorMessage = err instanceof Error ? err.message : "Could not add context item.";
+      console.error("Erro ao adicionar:", err);
+      const errorMessage = err instanceof Error ? err.message : "Erro ao adicionar item.";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -60,7 +60,7 @@ export default function NewContextItemPage() {
         <div className="flex justify-between items-center mb-8">
             <Button variant="ghost" size="sm" onClick={() => router.back()} className="inline-flex items-center gap-1 text-stone-600 hover:text-stone-900 px-2">
                  <ArrowLeftIcon className="h-4 w-4"/>
-                 <span>Back</span>
+                 <span>Voltar</span>
             </Button>
             {/* Save Button Moved Back Here */}
             <Button 

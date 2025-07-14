@@ -61,6 +61,7 @@ export const signUpAction = async (formData: FormData) => {
   });
 
   if (error) {
+    
     // Provide a more user-friendly error message
     let errorMessage = error.message;
     
@@ -93,7 +94,7 @@ export async function createCheckout(priceId: string) {
   );
 
   if (error) {
-    throw new Error("Ñão foi possível criar o seu Checkout. Tente novamente em alguns instantes.");
+    throw new Error("Não foi possível criar o seu Checkout. Tente novamente em alguns instantes.");
   }
 
   return redirect(data.url);
@@ -261,12 +262,10 @@ export interface UserModelSettings {
 // Default settings constant
 const defaultModelSettings: UserModelSettings = {
   enabledModels: [
-    'claude-3-7-sonnet-20250219', // Added 3.7
-    'claude-3-5-sonnet-20240620', 
-    'claude-3-sonnet-20240229', 
-    'claude-3-haiku-20240307'
+    'MedGPT - Padrão', // Added 3.7
+    'MedGPT R+ - Alta precisão'
   ],
-  selectedModel: 'claude-3-7-sonnet-20250219' // Make 3.7 default selected
+  selectedModel: 'MedGPT - Padrão' // Make 3.7 default selected
 };
 
 /**
@@ -365,7 +364,8 @@ export async function updateUserModelSettings(enabledIds: string[]): Promise<{ s
     // 2. Check if the current selected model is being disabled
     if (currentSelectedModel && !enabledIds.includes(currentSelectedModel)) {
       // console.log(`Selected model '${currentSelectedModel}' is being disabled.`); // Removed log
-      // 3. Determine the new selected model (first enabled or null)
+      
+    // 3. Determine the new selected model (first enabled or null)
       newSelectedModel = enabledIds.length > 0 ? enabledIds[0] : null;
       // console.log(`Automatically setting new selected model to: '${newSelectedModel}'`); // Removed log
     } else {
@@ -687,7 +687,7 @@ export async function addMessage(
  
      if (authError || !user) {
        console.error("User not authenticated for addMessage:", authError);
-       return { success: false, error: "User not authenticated." };
+       return { success: false, error: "Usuário não autenticado.." };
      }
  
      // Use a transaction to ensure both message insert and chat update happen or fail together

@@ -373,7 +373,7 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
                    <span>Perfil</span>
                    {/* Use PROP for tag */}
                    <span className="text-xs px-1.5 py-0.5 bg-stone-100 text-stone-500 rounded-full">
-                     {activePlanName ? capitalizeFirstLetter(activePlanName) : 'Free'}
+                     {activePlanName ? capitalizeFirstLetter(activePlanName) : 'Teste gratuito'}
                    </span>
                  </div>
                  <ChevronDown className={cn(

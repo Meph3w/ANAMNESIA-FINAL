@@ -68,8 +68,8 @@ export default function PricingContent({
     try {
       await createCheckout(priceId);
     } catch (error) {
-      console.error("Checkout error:", error);
-      setActionError("Failed to initiate checkout. Please try again.");
+      console.error("Erro no checkout:", error);
+      setActionError("Falha ao processar pedido. Tente novamente.");
       setIsLoadingPriceId(null);
     }
   }
@@ -84,12 +84,12 @@ export default function PricingContent({
       if (result.success) {
         const details = await getSubscriptionDetails();
         setSubscriptionDetails(details);
-        setActionSuccessMessage("Subscription cancellation scheduled.");
+        setActionSuccessMessage("Cancelamento de assinatura agendado.");
       } else {
-        setActionError(result.error || "Failed to cancel subscription.");
+        setActionError(result.error || "Falha ao cancelar assinatura.");
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "An unexpected error occurred.";
+      const message = error instanceof Error ? error.message : "Um erro inesperado ocorreu.";
       setActionError(message);
     } finally {
       setIsActionLoading(false);
@@ -145,7 +145,7 @@ export default function PricingContent({
 
         <div className="mb-6 h-5 text-center">
           {actionSuccessMessage && (<p className="text-sm text-green-600"> {actionSuccessMessage}</p>)}
-          {actionError && (<p className="text-sm text-red-600">Error: {actionError}</p>)}
+          {actionError && (<p className="text-sm text-red-600">Erro: {actionError}</p>)}
         </div>
 
         <div className="flex flex-col items-center gap-8">
@@ -167,7 +167,7 @@ export default function PricingContent({
                 )}>
                   {isCurrent && (
                     <div className="absolute top-4 right-4 bg-blue-500 text-white px-3 py-1 text-sm rounded-full">
-                      Current Plan
+                      Plano atual
                     </div>
                   )}
                   <div className="p-6">
@@ -192,13 +192,13 @@ export default function PricingContent({
                       {isCurrent && subscriptionDetails && !isLoadingDetails && (
                         <div className="text-sm text-gray-500 pt-1 pb-3 text-center my-2 h-12 w-70 flex items-center justify-center">
                           {subscriptionDetails.isCancelled
-                            ? `Plan cancelled. Access ends on ${subscriptionDetails.renewalDate || '[Date Unavailable]'}`
-                            : `Plan auto-renews on ${subscriptionDetails.renewalDate || '[Date Unavailable]'}`}
+                            ? `Plano cancelado. Seu accesso se encerra em ${subscriptionDetails.renewalDate || '[Date Unavailable]'}`
+                            : `Plano com auto-renovação para ${subscriptionDetails.renewalDate || '[Date Unavailable]'}`}
                         </div>
                       )}
                       {isCurrent && isLoadingDetails && (
                         <div className="text-sm text-gray-400 pt-1 pb-3 text-center my-2 animate-pulse h-12 flex items-center justify-center">
-                          Loading details...
+                          Carregando detalhes...
                         </div>
                       )}
 
@@ -222,7 +222,7 @@ export default function PricingContent({
                               disabled={isActionLoading}
                             >
                               {isActionLoading ? <Spinner className="mr-2 h-5 w-5 animate-spin" /> : <XCircle className="mr-2 h-5 w-5" aria-hidden="true" />}
-                              Cancel Subscription
+                              Cancelar assinatura
                             </Button>
                           )
                         ) : (

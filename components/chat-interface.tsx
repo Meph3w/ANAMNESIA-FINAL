@@ -20,11 +20,8 @@ import { ContextItem } from '@/app/actions';
 // Define available models with display names within this component
 // TODO: Centralize this definition later if needed
 const availableModelsForDisplay = [
-  { id: 'claude-3-7-sonnet-20250219', displayName: 'Claude 3.7 Sonnet' },
-  { id: 'claude-3-opus-20240229', displayName: 'Claude 3 Opus' }, 
-  { id: 'claude-3-5-sonnet-20240620', displayName: 'Claude 3.5 Sonnet' },
-  { id: 'claude-3-sonnet-20240229', displayName: 'Claude 3 Sonnet' },
-  { id: 'claude-3-haiku-20240307', displayName: 'Claude 3 Haiku' },
+  { id: 'gpt-4o-mini', displayName: 'MedGPT - Padrão' },
+  { id: 'gpt-4o', displayName: 'MedGPT R+ - Alta precisão' },
   // Add others matching the settings modal
 ];
 
@@ -498,7 +495,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                         disabled={isLoadingModels} 
                     >
                         <span>
-                            {isLoadingModels ? 'Loading...' : getDisplayName(selectedModel) ? getDisplayName(selectedModel) : enabledModels.length > 0 ? 'Select Model' : 'No Models Enabled'} 
+                            {isLoadingModels ? 'Carregando...' : getDisplayName(selectedModel) ? getDisplayName(selectedModel) : enabledModels.length > 0 ? 'Selecionar Modelo' : 'Sem Modelos Disponíveis'} 
                         </span>
                         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 10L4 6H12L8 10Z" fill="#6B7280"/></svg>
                     </button>
@@ -520,7 +517,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                                 );
                             })}
                             {enabledModels.length === 0 && !isLoadingModels && (
-                                <div className="px-3 py-2 text-sm text-gray-500 text-center"> No models enabled. Go to Settings &gt; Models. </div>
+                                <div className="px-3 py-2 text-sm text-gray-500 text-center"> Sem modelos disponíveis. Ajuste em configurações &gt; Modelos. </div>
                             )}
                             </div>
                         </div>,
@@ -533,7 +530,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                       variant="ghost" 
                       size="icon" 
                       className="relative text-gray-500 hover:bg-gray-100 h-8 w-8 p-1.5 rounded-md mr-2" // Added relative positioning
-                      aria-label="Add content"
+                      aria-label="Adicionar conteúdo"
                       // Removed disabled logic based on attachment
                     >
                       <PlusIcon className="h-5 w-5" />
@@ -550,12 +547,12 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                     {attachedImage ? (
                       <DropdownMenuItem onSelect={handleRemoveImage} className="text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-700">
                          <XIcon className="mr-2 h-4 w-4" />
-                         <span>Remove Image ({attachedImage.name.length > 15 ? attachedImage.name.substring(0, 15) + '...' : attachedImage.name})</span>
+                         <span>Remover imagem ({attachedImage.name.length > 15 ? attachedImage.name.substring(0, 15) + '...' : attachedImage.name})</span>
                       </DropdownMenuItem>
                     ) : (
                       <DropdownMenuItem onSelect={triggerImageUpload}>
                         <ImageIcon className="mr-2 h-4 w-4" />
-                        <span>Upload Image</span>
+                        <span>Upload de imagem</span>
                       </DropdownMenuItem>
                     )}
                     {/* --- Updated Context Item (to match IdeInterface) --- */}
@@ -565,7 +562,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                     >
                       <div className="flex items-center"> 
                         <BookText className="mr-2 h-4 w-4 flex-shrink-0" />
-                        <span className="flex-grow">Add Context</span>
+                        <span className="flex-grow">Editar contexto</span>
                       </div>
                       {attachedContextItem && <Check className="h-4 w-4 text-black ml-2 flex-shrink-0" strokeWidth={2} />} 
                     </DropdownMenuItem>
