@@ -1,8 +1,9 @@
 import { createSupabaseClient } from "@/utils/supabase/server";
-import { NextRequest } from "next/server";
 
-export async function POST(req: NextRequest, context: { params: { chatId: string } }) {
-  const { chatId } = context.params;
+export async function POST(req: Request, { params }: { params: { chatId: string } }) {
+console.log("POST handler params:", params);
+  console.log("POST handler request URL:", req.url);
+  const { chatId } = params;
   const supabase = await createSupabaseClient();
   const {
     data: { user },
