@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
     // Parse request body once
     const reqBody = await request.json();
-    const { messages, model, contextItemId, chatId, selectedObjective } = reqBody;
+    const { model, chatId, selectedObjective } = reqBody;
   
   
     // Enforce assistant branding and prevent OpenAI references
@@ -58,7 +58,6 @@ export async function POST(request: Request) {
       console.error("Error fetching subscriptions:", subsError);
       return new Response(JSON.stringify({ error: "Error fetching subscriptions" }), { status: 500 });
     }
-    const activeSub = subsData.subscriptions.find((s) => s.status === "active");
 
     // RAG: embed user query and fetch top 3 chunks
     const embeddingRes = await fetch("https://api.openai.com/v1/embeddings", {
@@ -84,6 +83,7 @@ export async function POST(request: Request) {
       console.warn("RAG lookup error:", chunkErr);
     } else if (chunks?.length) {
       const ragContext = chunks
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((c: any) => `— ${c.source_id}: ${c.content}`)
         .join("\n");
       reqBody.messages.unshift({ role: "system", content: `Context:\n${ragContext}` });
@@ -142,12 +142,14 @@ export async function POST(request: Request) {
 
     // Forward to OpenAI
     // Format messages for OpenAI (with system context already prepended)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const openAIMessages = reqBody.messages.map((msg: any) => {
       const role = msg.role
         ? msg.role
         : msg.sender === "ai"
         ? "assistant"
         : "user";
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const base = { role, content: msg.content } as any;
       // Force assistant to identify as AnamnesIA
       if (role === "assistant") {

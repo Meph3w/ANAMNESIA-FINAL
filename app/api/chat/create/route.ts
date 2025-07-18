@@ -7,7 +7,6 @@ import { startNewChat } from "@/app/actions";
  */
 export async function POST(request: NextRequest) {
     console.log("POST /api/chat/create called");
-    console.log("POST /api/chat/create called");
   try {
     const { prompt, model, contextId } = await request.json();
     console.log("API /api/chat/create payload:", { prompt, model, contextId });
@@ -48,12 +47,12 @@ export async function POST(request: NextRequest) {
     supabaseClient
       .from("credit_usage")
       .insert([{ user_id: user.id, credits_spent: 1 }])
-      .then(({ error }: { error: any }) => {
+      .then(({ error }) => {
         if (error) console.error("Error logging credit usage:", error);
       });
     return NextResponse.json({ chatId });
   } catch (err) {
-+    console.error("Error in /api/chat/create:", err);
+    console.error("Error in /api/chat/create:", err);
     const errorMessage =
       err instanceof Error ? err.message : "Unexpected error.";
     return NextResponse.json(

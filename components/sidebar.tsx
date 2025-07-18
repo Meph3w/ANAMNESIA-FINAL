@@ -8,8 +8,6 @@ import {
   ChevronLeft,
   ChevronDown,
   Plus,
-  Mail,
-  ArrowRight,
   Settings,
   LogOut,
   User,
@@ -34,17 +32,6 @@ function capitalizeFirstLetter(string: string | null): string {
 }
 
 // Define SocialLink at the top level
-const SocialLink = ({ icon: Icon, text, href }: { icon: React.ElementType, text: string, href: string }) => (
-  <a 
-    href={href} 
-    target="_blank" 
-    rel="noopener noreferrer"
-    className="flex items-center gap-3 text-sm text-stone-700 hover:text-stone-900 transition-colors"
-  >
-    <Icon className="h-4 w-4 text-stone-500" />
-    <span>{text}</span>
-  </a>
-);
 
 export interface SidebarProps {
   className?: string;
@@ -75,12 +62,15 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Credit usage state
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [creditsUsedLast30Days, setCreditsUsedLast30Days] = useState<number | null>(null);
   // Monthly plan and extra credits state
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [planCredits, setPlanCredits] = useState<number | null>(null);
   const [originalPlanCredits, setOriginalPlanCredits] = useState<number>(0);
   const [renewalDays, setRenewalDays] = useState<number>(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [extraCredits, setExtraCredits] = useState<number | null>(null);
   const [originalExtraCredits, setOriginalExtraCredits] = useState<number>(0);
 
@@ -208,24 +198,6 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
   };
 
   // Custom X Logo Component
-  const XLogo = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      shapeRendering="geometricPrecision" 
-      textRendering="geometricPrecision" 
-      imageRendering="optimizeQuality" 
-      fillRule="evenodd" 
-      clipRule="evenodd" 
-      viewBox="0 0 512 462.799" 
-      {...props}
-    >
-      <path 
-        fillRule="nonzero" 
-        d="M403.229 0h78.506L310.219 196.04 512 462.799H354.002L230.261 301.007 88.669 462.799h-78.56l183.455-209.683L0 0h161.999l111.856 147.88L403.229 0zm-27.556 415.805h43.505L138.363 44.527h-46.68l283.99 371.278z"
-        fill="currentColor"
-      />
-    </svg>
-  );
 
   // --- Define the callback for settings changes --- 
   const handleSettingsChanged = () => {

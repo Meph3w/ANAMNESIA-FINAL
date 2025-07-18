@@ -11,9 +11,8 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { getSubscriptionDetails } from "@/app/actions";
-import { ArrowUpRight, Coins } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { CheckoutSuccessHandler } from "@/components/checkout-success-handler";
-import { CreditSummary } from "@/components/CreditSummary";
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -30,20 +29,17 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
   const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(false);
 
   // Credit usage state
-  const [creditsRemaining, setCreditsRemaining] = useState<number>(0);
   const [creditsUsedLast30Days, setCreditsUsedLast30Days] = useState<number>(0);
   const [renewalDays, setRenewalDays] = useState<number>(0);
   
   // Track original plan and extra credits separately
   const [originalPlanCredits, setOriginalPlanCredits] = useState<number>(0);
-  const [extraCredits, setExtraCredits] = useState<number>(0);
   const [originalExtraCredits, setOriginalExtraCredits] = useState<number>(0);
 
   // Fetch credit usage and extras when authentication changes
   useEffect(() => {
     if (!isAuthenticated) {
       setCreditsUsedLast30Days(0);
-      setCreditsRemaining(0);
       setRenewalDays(0);
       return;
     }
@@ -57,7 +53,7 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
         return;
       }
       // Fetch profile extras and monthly plan
-      const { data: profile, error: profileError } = await client
+      const { data: profile } = await client
         .from("profiles")
         .select("credits, monthly_plan_credits")
         .eq("id", user.id)
@@ -66,10 +62,9 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
       const plan = profile?.monthly_plan_credits ?? 0;
       setOriginalPlanCredits(plan);
       setOriginalExtraCredits(extras);
-      setExtraCredits(extras);
       // Fetch usage since start of current month
       const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-      const { data: usageData, error: usageError } = await client
+      const { data: usageData } = await client
         .from("credit_usage")
         .select("credits_spent")
         .eq("user_id", user.id)
@@ -81,8 +76,6 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
       const extraRemaining = usageLast30Days > plan
         ? Math.max(extras - (usageLast30Days - plan), 0)
         : extras;
-      setExtraCredits(extraRemaining);
-      setCreditsRemaining(planRemaining + extraRemaining);
       // Calculate days until next monthly reset
       const now = new Date();
       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
