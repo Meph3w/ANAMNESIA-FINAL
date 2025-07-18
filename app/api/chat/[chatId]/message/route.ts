@@ -1,9 +1,8 @@
 import { createSupabaseClient } from "@/utils/supabase/server";
+import { NextRequest } from "next/server";
 
-export async function POST(
-  request: Request,
-  { params }: { params: { chatId: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: { chatId: string } }) {
+  const { chatId } = params;
   const supabase = await createSupabaseClient();
   const {
     data: { user },
@@ -23,7 +22,7 @@ export async function POST(
     .from("messages")
     .insert([
       {
-        chat_id: params.chatId,
+        chat_id: chatId,
         sender,
         content,
       },
