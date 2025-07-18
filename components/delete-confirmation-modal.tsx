@@ -40,7 +40,7 @@ export function DeleteConfirmationModal({
         <DialogHeader>
           <DialogTitle>Deletar item</DialogTitle>
           <DialogDescription>
-            Apagar para sempre &ldquo;{itemTitle || 'this item'}&rdquo;? Isso não pode ser desfeito.
+            Apagar &ldquo;{itemTitle || 'this item'}&rdquo;? Isso não poderá ser desfeito.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

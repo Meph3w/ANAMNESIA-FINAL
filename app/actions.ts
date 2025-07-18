@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { encodedRedirect } from "@/utils/redirect";
 import { revalidatePath } from "next/cache";
 import { createUpdateClient } from "@/utils/update/server";
-import Anthropic from '@anthropic-ai/sdk';
 import { SupabaseClient } from "@supabase/supabase-js";
 // Assuming MessageParam might not be found by linter yet
 // import { MessageParam } from '@anthropic-ai/sdk/resources/messages'; 
@@ -262,10 +261,10 @@ export interface UserModelSettings {
 // Default settings constant
 const defaultModelSettings: UserModelSettings = {
   enabledModels: [
-    'MedGPT - Padrão', // Added 3.7
-    'MedGPT R+ - Alta precisão'
+    'gpt-4o-mini', // Standard precision model ID
+    'gpt-4o'       // High precision model ID
   ],
-  selectedModel: 'MedGPT - Padrão' // Make 3.7 default selected
+  selectedModel: 'gpt-4o-mini' // Default to standard precision
 };
 
 /**
@@ -472,102 +471,71 @@ async function getContextItemContent(itemId: string | null | undefined, supabase
   return `--- Context: ${contextItem.name} ---\n${contextItem.content}\n--- End Context ---`;
 }
 
-// --- Server Action for Anthropic API Call (Updated) ---
+// --- Server Action for OpenAI API Call ---
 export async function getAnthropicResponse(
-  messages: ClientMessage[], 
+  messages: ClientMessage[],
   model: string,
-  contextItemId?: string | null // Added optional context item ID
+  contextItemId?: string | null
 ): Promise<{ success: boolean; response?: string; error?: string }> {
-  
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    console.error("ANTHROPIC_API_KEY is not set in environment variables.");
+    console.error("OPENAI_API_KEY is not set in environment variables.");
     return { success: false, error: "Server configuration error: API key missing." };
   }
   if (!model) {
-     return { success: false, error: "No model selected." };
+    return { success: false, error: "No model selected." };
   }
   if (messages.length === 0) {
-     return { success: false, error: "No messages to send." };
+    return { success: false, error: "No messages to send." };
   }
 
-  const supabase = await createSupabaseClient(); // Create client once
-  const anthropic = new Anthropic({ apiKey });
-
-  // Fetch context content if ID is provided
+  const supabase = await createSupabaseClient();
   let fetchedContextContent: string | null = null;
   if (contextItemId) {
     try {
       fetchedContextContent = await getContextItemContent(contextItemId, supabase);
-      if (fetchedContextContent) {
-         console.log(`Successfully fetched context: ${contextItemId}`);
-      } else {
-         console.log(`Could not fetch or find context: ${contextItemId}`);
-         // Decide if this failure should abort the request or proceed without context
-         // For now, we proceed without context
-      }
     } catch (fetchErr) {
-       console.error(`Caught error fetching context ${contextItemId}:`, fetchErr);
-       // Proceed without context on fetch error
+      console.error(`Error fetching context ${contextItemId}:`, fetchErr);
     }
   }
 
-  // Convert client messages
-  const formattedMessages: Anthropic.MessageParam[] = messages.map(msg => ({
+  // Format messages for OpenAI API
+  const formattedMessages: { role: string; content: string }[] = messages.map(msg => ({
     role: msg.sender === 'user' ? 'user' : 'assistant',
-    content: msg.content
+    content: msg.content,
   }));
 
-  // Prepend context to the *last user message* if fetched
-  // (Alternatively, could add as a separate user message, or system prompt if API supports it)
-  if (fetchedContextContent && formattedMessages.length > 0) {
-      const lastMessageIndex = formattedMessages.length - 1;
-      // Ensure the last message is from the user before modifying
-      if (formattedMessages[lastMessageIndex].role === 'user') {
-          const originalContent = formattedMessages[lastMessageIndex].content;
-          formattedMessages[lastMessageIndex].content = `${fetchedContextContent}\n\n${originalContent}`;
-          console.log(`Prepended context to user message for Anthropic API call.`);
-      } else {
-          // If the last message isn't user, perhaps add context as a new user message?
-          // Or log a warning and proceed without prepending. For simplicity, we log.
-          console.warn("Last message not from user, could not prepend context directly.");
-          // Option: formattedMessages.push({ role: 'user', content: fetchedContextContent });
-      }
+  if (fetchedContextContent) {
+    // Prepend as system message
+    formattedMessages.unshift({ role: 'system', content: fetchedContextContent });
   }
 
   try {
-    console.log(`Calling Anthropic API with model: ${model}`);
-    const response = await anthropic.messages.create({
-      model: model, 
-      max_tokens: 1024, 
-      messages: formattedMessages,
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: formattedMessages,
+      }),
     });
-    console.log("Anthropic API Response Status:", response.stop_reason);
-    type ContentBlock = { type: string; text?: string }; 
-    const textBlocks = response.content
-      .filter((block: ContentBlock): block is { type: 'text'; text: string } => 
-        block.type === 'text' && typeof block.text === 'string'
-      );
-    const aiTextResponse = textBlocks
-      .map((textBlock) => (textBlock as { text: string }).text) 
-      .join('\n');
-    if (!aiTextResponse && response.content.length > 0 && textBlocks.length === 0) {
-       console.warn("Anthropic response contained no usable text content.", response.content);
-       return { success: true, response: "" }; 
+    const data = await response.json();
+    if (!response.ok) {
+      const errorMessage = data.error?.message || "Error from OpenAI API.";
+      console.error("OpenAI API Error:", data);
+      return { success: false, error: errorMessage };
     }
-    if (!aiTextResponse && response.content.length === 0) {
-        console.warn("Anthropic API response was empty.", response);
-        return { success: false, error: "Received an empty response from AI." };
+    const aiTextResponse = data.choices?.[0]?.message?.content;
+    if (typeof aiTextResponse !== "string") {
+      return { success: false, error: "Received no response from AI." };
     }
     return { success: true, response: aiTextResponse };
   } catch (error: unknown) {
-    console.error("Error calling Anthropic API:", error);
-    let errorMessage = "An unexpected error occurred while contacting the AI.";
-    if (error instanceof Anthropic.APIError) {
-        errorMessage = `Anthropic API Error (${error.status}): ${error.message}`; 
-    } else if (error instanceof Error) { 
-        errorMessage = error.message;
-    }
+    console.error("Error calling OpenAI API:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred while contacting the AI.";
     return { success: false, error: errorMessage };
   }
 }
@@ -588,7 +556,9 @@ export async function startNewChat(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createSupabaseClient();
+    // Debug: log authentication result
     const { data: { user }, error: authError } = await supabase.auth.getUser();
+    console.log("startNewChat authError:", authError, "user:", user);
 
     if (authError || !user) {
       console.error("User not authenticated:", authError);
@@ -615,28 +585,28 @@ export async function startNewChat(
        ? `${fetchedContextContent}\n\n${initialUserPrompt}`
        : initialUserPrompt;
 
-    // Generate initial chat name (or maybe generate AFTER first AI response?)
-    const initialChatName = finalUserPrompt.substring(0, 50) + (finalUserPrompt.length > 50 ? '...' : '');
+    // Generate initial chat name using only the user's prompt (exclude context)
+    const initialChatName = initialUserPrompt.substring(0, 50) + (initialUserPrompt.length > 50 ? '...' : '');
 
-    // Replace RPC call with separate inserts
     // 1. Create the chat record
-    const { error: chatInsertError } = await supabase
+    const insertResult = await supabase
       .from('chats')
-      .insert({
-        id: chatId, // Use the client-generated ID
+      .insert([{
+        id: chatId,
         user_id: user.id,
-        model_id: selectedModelId, // Store initial model
-        name: initialChatName 
-        // created_at and updated_at have defaults
-      });
+        name: initialChatName,
+      }]);
+    console.log("startNewChat insertResult:", insertResult);
+    const chatInsertError = insertResult.error;
 
     if (chatInsertError) {
       console.error("Error inserting chat record:", chatInsertError);
-       // Check for duplicate chat ID specifically
-       if (chatInsertError.code === '23505') { // PostgreSQL duplicate key error code
-         return { success: false, error: "Chat ID already exists. Please try again." };
+      // Check for duplicate chat ID specifically
+      if (chatInsertError.code === '23505') { // PostgreSQL duplicate key error code
+        return { success: false, error: "Chat ID already exists. Please try again." };
       }
-      return { success: false, error: "Failed to create chat session." };
+      // Return actual database error message for debugging
+      return { success: false, error: chatInsertError.message };
     }
 
     // 2. Save the initial user message
@@ -646,9 +616,8 @@ export async function startNewChat(
         chat_id: chatId,
         user_id: user.id,
         sender: 'user',
-        content: finalUserPrompt, // Use the potentially modified prompt
-        model_id: selectedModelId // Also store the model used for the prompt context if any
-        // created_at has default
+        content: initialUserPrompt, // Store only the user’s prompt, not the context
+        model_id: selectedModelId,
       });
 
     if (messageInsertError) {

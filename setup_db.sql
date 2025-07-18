@@ -8,9 +8,15 @@ create table public.profiles (
   full_name text,
   avatar_url text,
   website text,
+stripe_customer_id text,
+credits integer default 0,
+monthly_plan_credits integer default 0,
+monthly_usage integer default 0,
+monthly_reset_date timestamptz default now(),  -- track last monthly reset
   enabled_models text[] default '{}', -- Added during ALTER steps below, included here for completeness
   selected_model text,            -- Added during ALTER steps below, included here for completeness
-  constraint username_length check (char_length(username) >= 3)
+  constraint username_length check (username IS NULL OR char_length(username) >= 3),
+  constraint monthly_usage_limit check (monthly_usage <= monthly_plan_credits)
 );
 
 -- 2. Set up Row Level Security (RLS) for profiles
@@ -235,3 +241,74 @@ CREATE TRIGGER on_auth_user_created
 -- ==========================================================================\
 -- End of Script\
 -- ========================================================================== 
+-- Table to log credit usage in last 30 days
+CREATE TABLE public.credit_usage (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  credits_spent integer NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Enable RLS for credit_usage
+ALTER TABLE public.credit_usage ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow SELECT for own credit usage" ON public.credit_usage
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Allow INSERT for own credit usage" ON public.credit_usage
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Index to speed up 30-day usage queries
+CREATE INDEX idx_credit_usage_user_30days ON public.credit_usage(user_id, created_at);
+
+-- ========================================================================
+-- RPC to get credit summary with built-in monthly reset logic
+-- ========================================================================
+CREATE OR REPLACE FUNCTION public.get_credit_summary(user_uuid uuid)
+RETURNS TABLE(
+  monthly_used int,
+  monthly_total int,
+  monthly_remaining int,
+  next_reset_date timestamptz,
+  lifetime_used int,
+  lifetime_total int,
+  lifetime_remaining int
+) AS $$
+DECLARE
+  p RECORD;
+  start_of_month timestamptz := date_trunc('month', now());
+BEGIN
+  -- Fetch profile
+  SELECT monthly_usage, monthly_plan_credits, credits, monthly_reset_date
+    INTO p
+    FROM public.profiles
+   WHERE id = user_uuid;
+
+  -- If last reset is before start of current month, do reset
+  IF p.monthly_reset_date < start_of_month THEN
+    UPDATE public.profiles
+       SET monthly_usage = 0,
+           monthly_reset_date = now()
+     WHERE id = user_uuid;
+    p.monthly_usage := 0;
+  END IF;
+
+  -- Compute values
+  monthly_used      := p.monthly_usage;
+  monthly_total     := p.monthly_plan_credits;
+  monthly_remaining := greatest(monthly_total - monthly_used, 0);
+  next_reset_date   := start_of_month + interval '1 month';
+  lifetime_total    := p.credits;
+  -- lifetime_used can come from credit_usage or stored field; sum usage older than monthly window
+  SELECT coalesce(sum(credits_spent),0)
+    INTO lifetime_used
+    FROM public.credit_usage
+   WHERE user_id = user_uuid
+     AND created_at < start_of_month;
+  lifetime_remaining := greatest(lifetime_total - lifetime_used, 0);
+
+  RETURN;
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.get_credit_summary(uuid) TO authenticated;

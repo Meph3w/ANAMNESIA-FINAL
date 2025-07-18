@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { ImageIcon, ArrowUp, Check, Loader2, PlusIcon, BookText, XIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { getUserModelSettings, updateUserSelectedModel, getAnthropicResponse, addMessage, getMessagesForChat, updateChatName } from '@/app/actions'; // Keep model actions if needed in chat view
+import { createSupabaseClient } from "@/utils/supabase/client";
+import { useRouter } from 'next/navigation';
+import { getUserModelSettings, updateUserSelectedModel, getMessagesForChat, updateChatName } from '@/app/actions'; // Keep model actions if needed in chat view
 import { SettingsModal } from './settings-modal';
 import { v4 as uuidv4 } from 'uuid';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -75,6 +78,30 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
 
   // --- New State for Attached Image --- 
   const [attachedImage, setAttachedImage] = useState<File | null>(null);
+
+  // --- New State for Response Objectives ---
+  const objectives = [
+    { id: 'equilibrado', label: 'Equilibrado' },
+    { id: 'Você vai atuar como um assistente de resumos médicos, para estudantes e profissionais. Sempre resuma da forma mais completa  possível o tema citado, e ao fim do resumo sempre sugira novos temas relacionados para aprofundamento - da seguinte forma: pule duas linhas e escreva a frase: Gostaria de se aprofundar mais? Dúvidas comuns incluem: [TÓPICO1] [TÓPICO2]. Seja direto e conciso, mas bastante detalhista. Sempre inicie o tópico com um resumo geral, em tópicos, e prossiga com os itens destrinchados, um a um.', label: 'Resumo' },
+    { id: 'Você vai atuar como um assistente de consultas médicas. Sempre trabalhe para obter a maior acurácia com os dados enviados. Se precisar de algo, ficar alguma dúvida, pergunte ao usuário. Você ajudará com hipóteses diagnósticas, condutas, diagnósticos diferencias e guidelines mais atuais e recentes.', label: 'Consultas' }
+  ];
+  const [selectedObjective, setSelectedObjective] = useState(objectives[0].id);
+
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  // Check auth status on mount and listen for changes
+  useEffect(() => {
+    const supabase = createSupabaseClient();
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    }
+    checkAuth();
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+    return () => { authListener?.subscription.unsubscribe(); };
+  }, []);
 
   // --- Calculate Attachment Count --- 
   const attachmentCount = (attachedContextItem ? 1 : 0) + (attachedImage ? 1 : 0);
@@ -165,8 +192,21 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
       if (textareaRef.current) textareaRef.current.disabled = true;
 
       try {
-        // Use the potentially updated currentModel
-        const result = await getAnthropicResponse([initialUserMessage], currentModel);
+        // Call API route for initial response
+        const apiRes = await fetch('/api/generator', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: [initialUserMessage], model: currentModel, contextItemId: attachedContextItem?.id || null, selectedObjective, chatId })
+        });
+        const data = await apiRes.json();
+        const result = {
+          success: apiRes.ok && !!data.choices?.[0]?.message?.content,
+          response: data.choices?.[0]?.message?.content ?? '',
+          error: apiRes.ok && data.choices?.[0]?.message?.content
+            ? undefined
+            : `Error: ${data.error || 'Failed to get response from AI.'}`
+        };
 
         let aiContent: string;
         let messageToSave: Message | null = null;
@@ -175,9 +215,12 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
           aiContent = result.response;
           messageToSave = { id: uuidv4(), sender: 'ai', content: aiContent };
 
-          // Save AI message ONLY (name is already set)
-          addMessage(chatId, 'ai', aiContent, currentModel)
-             .catch(err => console.error("Error saving initial AI message:", err));
+          // Persist initial AI message
+          fetch(`/api/chat/${chatId}/message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sender: 'ai', content: aiContent })
+          }).catch(err => console.error("Error saving initial AI message:", err));
           
           // Remove chat name update logic
           /*
@@ -199,7 +242,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
         }
         setMessages(prev => [...prev, messageToSave!]);
       } catch (error) {
-        console.error("Error calling getAnthropicResponse (initial flow):", error);
+        console.error("Error calling /api/generator (initial flow):", error);
         const errorMsg: Message = { id: uuidv4(), sender: 'ai', content: "An error occurred while processing your request." };
         setMessages(prev => [...prev, errorMsg]);
       } finally {
@@ -210,7 +253,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
           textareaRef.current?.focus();
         }, 50); // 50ms delay
       }
-  }, [chatId, selectedModel, isLoadingModels, addMessage, updateChatName]); // Dependencies
+  }, [chatId, selectedModel, isLoadingModels]); // Dependencies
 
   // Effect to trigger initial response if messages load BEFORE models
    useEffect(() => {
@@ -326,47 +369,49 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     setAttachedContextItem(null); 
     setAttachedImage(null); 
     
-    // Save user message (only the typed content)
-    addMessage(chatId, 'user', currentPrompt)
-      .catch(err => console.error("Error saving user message:", err));
+    // Persist user message
+    fetch(`/api/chat/${chatId}/message`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sender: 'user', content: currentPrompt })
+    }).catch(err => console.error("Error saving user message:", err));
 
     setIsAiResponding(true); 
     if(textareaRef.current) textareaRef.current.disabled = true;
     
     try {
       console.log(`Submitting prompt for chat ${chatId} with model ${selectedModel}`);
-      // Pass the updated message list AND the context item ID
-      const result = await getAnthropicResponse(
-          updatedMessagesForApi, 
-          selectedModel,
-          attachedContextItem?.id || null // Pass the context ID here
-      );
+      // Call API route for chat completion
+      const apiRes = await fetch('/api/generator', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: updatedMessagesForApi, model: selectedModel, contextItemId: attachedContextItem?.id || null, selectedObjective, chatId })
+      });
+      const data = await apiRes.json();
+      const hasError2 = Boolean(data.error);
+      const content2 = data.choices?.[0]?.message?.content ?? '';
+      const success2 = apiRes.ok && !hasError2 && !!content2;
+      const aiContent = success2 ? content2 : `Error: ${data.error ?? 'Failed to get response from AI.'}`;
+      const result = { success: success2, response: aiContent, error: success2 ? undefined : aiContent };
 
-      let aiContent: string;
-      let messageToSave: Message | null = null;
+      const messageToSave: Message = result.success && result.response
+        ? { id: uuidv4(), sender: 'ai', content: result.response }
+        : { id: uuidv4(), sender: 'ai', content: `Error: ${result.error || 'Failed to get response from AI.'}` };
 
       if (result.success && result.response) {
-        aiContent = result.response;
-         messageToSave = {
-              id: uuidv4(),
-              sender: 'ai',
-              content: aiContent
-            };
-        addMessage(chatId, 'ai', aiContent, selectedModel)
-          .catch(err => console.error("Error saving AI message:", err));
+        fetch(`/api/chat/${chatId}/message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sender: 'ai', content: messageToSave.content })
+        }).catch(err => console.error("Error saving AI message:", err));
       } else {
-        aiContent = `Error: ${result.error || 'Failed to get response from AI.'}`;
-        messageToSave = {
-              id: uuidv4(),
-              sender: 'ai',
-              content: aiContent
-            };
         console.error("Follow-up AI Error:", result.error);
       }
-      setMessages(prev => [...prev, messageToSave!]);
+      setMessages(prev => [...prev, messageToSave]);
 
     } catch (error) {
-      console.error("Error calling getAnthropicResponse (follow-up):", error);
+      console.error("Error calling /api/generator (follow-up):", error);
       const errorMsg: Message = {
         id: uuidv4(),
         sender: 'ai',
@@ -425,19 +470,21 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
             <div className="text-center text-red-600 py-4">{messageError}</div>
           )}
           {/* Display existing/new messages */}
-          {!isLoadingMessages && !messageError && messages.map((msg) => (
+          {!isLoadingMessages && !messageError && messages
+            .filter(msg => !msg.content.startsWith('--- Context:'))
+            .map((msg) => (
             <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
                 { /* User Message Styling */ }
                 {msg.sender === 'user' && (
                     <div className="max-w-[75%] px-4 py-2 rounded-xl bg-gray-100 text-gray-800">
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
                 )}
                 { /* AI Message Styling */ }
                 {msg.sender === 'ai' && (
                     <div className="max-w-[90%] text-gray-800">
                         {/* AI Content - No background bubble */}
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
                 )}
             </div>
@@ -448,7 +495,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
             <div className="flex justify-start">
               <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 text-gray-500 shadow-sm">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Thinking...</span>
+                <span>Carregando...</span>
               </div>
             </div>
           )}
@@ -523,7 +570,22 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
                         </div>,
                     document.body)}
                 </div>
-                {/* Add Content Dropdown with Badge */} 
+                {/* Objective Selector */}
+                <div className="ml-2">
+                  <select
+                    value={selectedObjective}
+                    onChange={(e) => setSelectedObjective(e.target.value)}
+                    className="text-gray-500 text-sm border border-gray-200 rounded-md px-2 py-1 bg-white"
+                  >
+                    {objectives.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Add Content Dropdown with Badge */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 

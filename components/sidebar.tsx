@@ -14,12 +14,13 @@ import {
   LogOut,
   User,
   MoreHorizontal,
+  Edit,
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { createSupabaseClient } from "@/utils/supabase/client";
 import { SettingsModal } from "./settings-modal";
 import { DeleteConfirmationModal } from "./delete-confirmation-modal";
-import { getChatHistory, deleteChat } from "@/app/actions";
+import { getChatHistory, deleteChat, updateChatName } from "@/app/actions";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ChatHistoryItem {
@@ -73,6 +74,16 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
   const [chatToDelete, setChatToDelete] = useState<ChatHistoryItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Credit usage state
+  const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
+  const [creditsUsedLast30Days, setCreditsUsedLast30Days] = useState<number | null>(null);
+  // Monthly plan and extra credits state
+  const [planCredits, setPlanCredits] = useState<number | null>(null);
+  const [originalPlanCredits, setOriginalPlanCredits] = useState<number>(0);
+  const [renewalDays, setRenewalDays] = useState<number>(0);
+  const [extraCredits, setExtraCredits] = useState<number | null>(null);
+  const [originalExtraCredits, setOriginalExtraCredits] = useState<number>(0);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const profileButton = document.querySelector('.profile-button');
@@ -91,7 +102,71 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
     };
   }, []);
 
-  // --- useEffect to fetch chat history --- 
+  // --- State to fetch credit usage and plan details ---
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setCreditsRemaining(null);
+      setCreditsUsedLast30Days(null);
+      setPlanCredits(null);
+      setExtraCredits(null);
+      return;
+    }
+    const fetchCredits = async () => {
+      const client = createSupabaseClient();
+      const { data: { user }, error: authError } = await client.auth.getUser();
+      if (authError || !user) {
+        console.error("Error fetching user for credits:", authError);
+        setCreditsRemaining(0);
+        setCreditsUsedLast30Days(0);
+        return;
+      }
+      const { data: profile } = await client
+        .from("profiles")
+        .select("credits, monthly_plan_credits")
+        .eq("id", user.id)
+        .single();
+      const extras = profile?.credits ?? 0;
+      const plan = profile?.monthly_plan_credits ?? 0;
+      setOriginalExtraCredits(extras);
+      setExtraCredits(extras);
+      setPlanCredits(plan);
+      setOriginalPlanCredits(plan);
+      const total = extras + plan;
+      setCreditsRemaining(total);
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      const { data: usage } = await client
+        .from("credit_usage")
+        .select("credits_spent")
+        .eq("user_id", user.id)
+        .gt("created_at", startOfMonth.toISOString());
+      if (usage) {
+        const sum = usage.reduce((acc, item) => acc + (item.credits_spent || 0), 0);
+        setCreditsUsedLast30Days(sum);
+        // Spend plan credits first, then extras
+        const planRemaining = Math.max(plan - sum, 0);
+        const extraRemaining = sum > plan
+          ? Math.max(extras - (sum - plan), 0)
+          : extras;
+        setPlanCredits(planRemaining);
+        setExtraCredits(extraRemaining);
+        setCreditsRemaining(planRemaining + extraRemaining);
+      } else {
+        setCreditsUsedLast30Days(0);
+        setExtraCredits(extras);
+        setPlanCredits(plan);
+        setCreditsRemaining(extras + plan);
+      }
+       // Calculate renewal days until next month
+       const now = new Date();
+       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+       const daysLeft = Math.ceil((endOfMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+       setRenewalDays(daysLeft);
+    };
+    fetchCredits();
+  }, [isAuthenticated]);
+
+  // --- useEffect to fetch chat history ---
   useEffect(() => {
     console.log("[Sidebar Effect] Running due to auth/path change:", { isAuthenticated, pathname });
     if (isAuthenticated) { 
@@ -312,9 +387,33 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
                         </div>
                       </Button>
                       {/* Three Dot Menu Button - Opens Modal */}
-                       <Button 
-                          variant="ghost" 
-                          size="icon" 
+                       {/* Rename Chat Button */}
+                       <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 p-0 flex-shrink-0 text-stone-500 hover:bg-stone-200 mr-1 opacity-0 group-hover:opacity-100"
+                          onClick={e => {
+                            e.stopPropagation();
+                            const newName = window.prompt("Novo nome do chat:", chat.title);
+                            if (newName && newName.trim()) {
+                              updateChatName(chat.id, newName.trim()).then((res: { success: boolean; error?: string }) => {
+                                if (res.success) {
+                                  setChatHistory(prev =>
+                                    prev.map(c => (c.id === chat.id ? { ...c, title: newName.trim() } : c))
+                                  );
+                                } else {
+                                  console.error("Error renaming chat:", res.error);
+                                }
+                              });
+                            }
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                       {/* Delete Chat Button */}
+                       <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-7 w-7 p-0 flex-shrink-0 text-stone-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -332,19 +431,19 @@ export function SidebarComponent({ className, onToggleCollapse, collapsed = fals
             </div>
           </div>
 
-          {/* Conditionally render Upgrade section based on loading state */}
-          {isAuthenticated && !isSubscriptionLoading && !activePlanName && (
+          {/* Credit summary and plan tiers */}
+          {isAuthenticated && !isSubscriptionLoading && (
             <>
               <Separator className="bg-stone-200"/>
-              <div className="px-3 py-2 flex flex-col gap-y-1 flex-shrink-0">
-                <Button 
-                  variant="outline"
-                  className="w-full justify-start gap-2 border-stone-200 text-stone-700 hover:bg-stone-200"
-                  onClick={() => router.push('/pricing')}
-                >
-                  <ArrowRight className="h-4 w-4" />
-                  <span>Melhorar meu plano</span>
-                </Button>
+              <div className="mx-3 mb-3 p-3 bg-white border border-stone-200 rounded-lg">
+                <div className="flex flex-col gap-2 text-sm text-stone-700">
+                  <div>
+                    Plano mensal: {Math.min(creditsUsedLast30Days ?? 0, originalPlanCredits)}/{originalPlanCredits} - renova em {renewalDays} dias
+                  </div>
+                  <div>
+                    Créditos avulsos: {Math.max((creditsUsedLast30Days ?? 0) - originalPlanCredits, 0)}/{originalExtraCredits}
+                  </div>
+                </div>
               </div>
             </>
           )}

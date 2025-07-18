@@ -10,7 +10,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ContextItem, getUserModelSettings, updateUserSelectedModel, startNewChat } from '@/app/actions';
+import { ContextItem, getUserModelSettings, updateUserSelectedModel } from '@/app/actions';
 import { SettingsModal } from "./settings-modal";
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
@@ -91,6 +91,13 @@ export function IdeInterfaceComponent() {
   // --- State for Attachments --- 
   const [attachedContextItem, setAttachedContextItem] = useState<ContextItem | null>(null);
   const [attachedImage, setAttachedImage] = useState<File | null>(null);
+// --- State for Response Objectives --- 
+const objectives = [
+  { id: 'equilibrado', label: 'Equilibrado' },
+  { id: 'resumo', label: 'Resumo' },
+  { id: 'consultas', label: 'Consultas' }
+];
+const [selectedObjective, setSelectedObjective] = useState(objectives[0].id);
 
   // --- Calculate Attachment Count --- 
   const attachmentCount = (attachedContextItem ? 1 : 0) + (attachedImage ? 1 : 0);
@@ -339,22 +346,29 @@ export function IdeInterfaceComponent() {
 
     try {
       console.log(`IdeInterface: Starting new chat with prompt: ${currentPrompt}`);
-      const result = await startNewChat(
-          newChatId, 
-          currentPrompt, 
-          currentSelectedModel,
-          attachedContextItem?.id || null
-      );
-
-      if (result.success) {
+      const response = await fetch('/api/chat/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          prompt: currentPrompt,
+          model: currentSelectedModel,
+          contextId: attachedContextItem?.id ?? null,
+          selectedObjective
+        })
+      });
+      const data = await response.json();
++      console.log("API /api/chat/create response:", response.status, data);
+      if (response.ok && data.chatId) {
         // Clear attachments on successful navigation
         setAttachedContextItem(null);
         setAttachedImage(null);
-        router.push(`/c/${newChatId}`);
+        router.push(`/c/${data.chatId}`);
       } else {
-        console.error("Failed to start new chat:", result.error);
-        alert(`Error: ${result.error || 'Could not start chat.'}`);
+        console.error("Failed to start new chat:", data.error);
+        alert(`Error: ${data.error || 'Could not start chat.'}`);
       }
+
     } catch (error) {
       console.error("Unexpected error starting chat:", error);
       alert("An unexpected error occurred.");
@@ -388,7 +402,7 @@ export function IdeInterfaceComponent() {
                Chat médico de alta qualidade baseado em IA - Comece agora!
             </p>
           </section>
-          <div className="w-full mx-auto relative max-w-[710px] rounded-2xl border border-gray-200 bg-[#f3f4f6] overflow-hidden mb-12 shadow-sm">
+          <div className="w-full mx-auto relative max-w-[710px] rounded-lg border border-gray-200 bg-[#f3f4f6] overflow-hidden mb-12 shadow-sm">
             <div className="flex flex-col">
               <div className="w-full relative">
                 <textarea
@@ -487,7 +501,7 @@ export function IdeInterfaceComponent() {
                         )}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuContent align="start" className="w-48 rounded-lg border border-gray-100 shadow-sm">
                       {/* --- Conditional Image Item --- */}
                       {attachedImage ? (
                         <DropdownMenuItem onSelect={handleRemoveImage} className="text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-700">

@@ -119,10 +119,12 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
           setSubscriptionDetails(subscriptionData);
           
           // Initialize models state using the correct field from the settings object
+          // Ensure MedGPT - Padrão is always enabled
+          const enabledSet = new Set<string>(['gpt-4o-mini', ...userSettings.enabledModels]);
           setModels(
             availableModels.map(model => ({
               ...model,
-              enabled: userSettings.enabledModels.includes(model.id)
+              enabled: enabledSet.has(model.id)
             }))
           );
 
@@ -147,6 +149,12 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
 
   // Updated Model Checkbox Handler to save
   const handleCheckedChange = async (id: string, checked: boolean | 'indeterminate') => {
+    // Prevent unselecting the default model
+    if (id === 'gpt-4o-mini' && !checked) {
+      setModelSaveError("MedGPT - Padrão deve permanecer selecionado.");
+      setTimeout(() => setModelSaveError(null), 3000);
+      return;
+    }
     const isTryingToDisable = !checked;
     const enabledModelsCount = models.filter(model => model.enabled).length;
     const changingModel = models.find(model => model.id === id);
@@ -419,6 +427,9 @@ export function SettingsModal({ isOpen, setIsOpen, onSettingsChanged }: Settings
        <h2 id="models-heading" className="text-lg font-semibold text-gray-900">Modelos disponíveis</h2>
       <p className="text-sm text-gray-600 mb-6">
         Selecione os modelos que você deseja utilizar nas suas pesquisas.
+      </p>
+      <p className="text-sm text-gray-600 mb-4">
+        Custos: MedGPT - Padrão: 1 crédito; MedGPT R+ - Alta precisão: 5 créditos.
       </p>
        {isLoadingModels ? (
          <div className="flex justify-center items-center py-8"><Spinner /></div>

@@ -1,5 +1,8 @@
 "use client";
 
+// Supabase client for credit queries
+import { createSupabaseClient } from "@/utils/supabase/client";
+
 import { SidebarComponent } from "@/components/sidebar";
 import { ThemeProvider } from "next-themes";
 import { useState, useEffect } from "react";
@@ -8,8 +11,9 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { getSubscriptionDetails } from "@/app/actions";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Coins } from "lucide-react";
 import { CheckoutSuccessHandler } from "@/components/checkout-success-handler";
+import { CreditSummary } from "@/components/CreditSummary";
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -24,6 +28,69 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
   
   const [activePlanName, setActivePlanName] = useState<string | null>(null);
   const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(false);
+
+  // Credit usage state
+  const [creditsRemaining, setCreditsRemaining] = useState<number>(0);
+  const [creditsUsedLast30Days, setCreditsUsedLast30Days] = useState<number>(0);
+  const [renewalDays, setRenewalDays] = useState<number>(0);
+  
+  // Track original plan and extra credits separately
+  const [originalPlanCredits, setOriginalPlanCredits] = useState<number>(0);
+  const [extraCredits, setExtraCredits] = useState<number>(0);
+  const [originalExtraCredits, setOriginalExtraCredits] = useState<number>(0);
+
+  // Fetch credit usage and extras when authentication changes
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setCreditsUsedLast30Days(0);
+      setCreditsRemaining(0);
+      setRenewalDays(0);
+      return;
+    }
+    const fetchCredits = async () => {
+      const client = createSupabaseClient();
+      const { data: { user }, error: authError } = await client.auth.getUser();
+      if (authError || !user) {
+        setCreditsUsedLast30Days(0);
+        setCreditsRemaining(0);
+        setRenewalDays(0);
+        return;
+      }
+      // Fetch profile extras and monthly plan
+      const { data: profile, error: profileError } = await client
+        .from("profiles")
+        .select("credits, monthly_plan_credits")
+        .eq("id", user.id)
+        .single();
+      const extras = profile?.credits ?? 0;
+      const plan = profile?.monthly_plan_credits ?? 0;
+      setOriginalPlanCredits(plan);
+      setOriginalExtraCredits(extras);
+      setExtraCredits(extras);
+      // Fetch usage since start of current month
+      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      const { data: usageData, error: usageError } = await client
+        .from("credit_usage")
+        .select("credits_spent")
+        .eq("user_id", user.id)
+        .gt("created_at", startOfMonth.toISOString());
+      const usageLast30Days = usageData?.reduce((acc, item) => acc + (item.credits_spent ?? 0), 0) ?? 0;
+      setCreditsUsedLast30Days(usageLast30Days);
+      // Spend plan credits first, then extras
+      const planRemaining = Math.max(plan - usageLast30Days, 0);
+      const extraRemaining = usageLast30Days > plan
+        ? Math.max(extras - (usageLast30Days - plan), 0)
+        : extras;
+      setExtraCredits(extraRemaining);
+      setCreditsRemaining(planRemaining + extraRemaining);
+      // Calculate days until next monthly reset
+      const now = new Date();
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const daysLeft = Math.ceil((endOfMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      setRenewalDays(daysLeft);
+    };
+    fetchCredits();
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const fetchSubscriptionStatus = async () => {
@@ -121,15 +188,27 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
               )}
             </div>
             
-            <div className="flex items-center">
-              {/* Show Upgrade Button only when authenticated, not loading, and no active plan */}
-              {isAuthenticated && !isSubscriptionLoading && !activePlanName && <Link 
-                className="relative inline-flex items-center justify-center gap-1 whitespace-nowrap transition-colors focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-stone-900 text-stone-100 hover:bg-stone-800 px-4 py-2 h-10 rounded-full text-sm font-medium shadow-none"
+            <div className="flex items-center gap-4">
+              {/* Credit summary */}
+              {isAuthenticated && !isSubscriptionLoading && (
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-stone-700">
+                    Plano mensal: {Math.min(creditsUsedLast30Days, originalPlanCredits)}/{originalPlanCredits} - renova em {renewalDays} dias
+                  </span>
+                  <span className="text-sm text-stone-700">
+                    Créditos avulsos: {Math.max(creditsUsedLast30Days - originalPlanCredits, 0)}/{originalExtraCredits}
+                  </span>
+                </div>
+              )}
+              {/* Show Upgrade Button */}
+              {isAuthenticated && !isSubscriptionLoading && !activePlanName && (
+              <Link
+                className="relative inline-flex items-center justify-center gap-1 whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-50 bg-stone-900 text-stone-100 hover:bg-stone-800 px-4 py-2 h-10 rounded-full text-sm font-medium shadow-none"
                 href="/pricing"
               >
-                Upgrade 
+                Upgrade
                 <ArrowUpRight className="h-4 w-4" />
-              </Link>}
+              </Link>)}
 
               {/* Only show Login/Signup if not authenticated */}
               {!isAuthenticated && (
