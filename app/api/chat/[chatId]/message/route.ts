@@ -1,8 +1,8 @@
 import { createSupabaseClient } from "@/utils/supabase/server";
 import { NextRequest } from "next/server";
 
-export async function POST(request: NextRequest, { params }: { params: { chatId: string } }) {
-  const chatId = params.chatId;
+export async function POST(req: NextRequest, context: { params: { chatId: string } }) {
+  const { chatId } = context.params;
   const supabase = await createSupabaseClient();
   const {
     data: { user },
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest, { params }: { params: { chatId:
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
-  const body = await request.json();
+  const body = await req.json();
   const { sender, content } = body;
   if (!sender || !content) {
     return new Response(JSON.stringify({ error: "Missing sender or content" }), { status: 400 });
