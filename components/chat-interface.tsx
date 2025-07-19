@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ImageIcon, ArrowUp, Check, Loader2, PlusIcon, BookText, XIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { getUserModelSettings, updateUserSelectedModel, getMessagesForChat, updateChatName } from '@/app/actions'; // Keep model actions if needed in chat view
+import { getUserModelSettings, updateUserSelectedModel, getMessagesForChat } from '@/app/actions'; // Keep model actions if needed in chat view
 import { SettingsModal } from './settings-modal';
 import { v4 as uuidv4 } from 'uuid';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -85,7 +85,6 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   ];
   const [selectedObjective, setSelectedObjective] = useState(objectives[0].id);
 
-[REMOVE]
 
   // --- Calculate Attachment Count --- 
   const attachmentCount = (attachedContextItem ? 1 : 0) + (attachedImage ? 1 : 0);
@@ -237,7 +236,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
           textareaRef.current?.focus();
         }, 50); // 50ms delay
       }
-  }, [chatId, selectedModel, isLoadingModels]); // Dependencies
+  }, [chatId, selectedModel, isLoadingModels, attachedContextItem, selectedObjective]); // Dependencies
 
   // Effect to trigger initial response if messages load BEFORE models
    useEffect(() => {

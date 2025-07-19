@@ -615,7 +615,7 @@ export async function startNewChat(
         chat_id: chatId,
         user_id: user.id,
         sender: 'user',
-        content: initialUserPrompt, // Store only the user’s prompt, not the context
+        content: finalUserPrompt, // Use finalUserPrompt which includes context if present
         model_id: selectedModelId,
       });
 

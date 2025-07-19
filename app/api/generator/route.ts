@@ -53,7 +53,7 @@ export async function POST(request: Request) {
 // User messages persisted via /api/chat/[chatId]/message; skip here to avoid duplicates
 
     // Check subscription via Update.dev
-    const { data: subsData, error: subsError } = await updateClient.billing.getSubscriptions();
+    const { error: subsError } = await updateClient.billing.getSubscriptions();
     if (subsError) {
       console.error("Error fetching subscriptions:", subsError);
       return new Response(JSON.stringify({ error: "Error fetching subscriptions" }), { status: 500 });

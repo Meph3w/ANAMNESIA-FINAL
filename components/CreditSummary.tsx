@@ -43,7 +43,7 @@ export function CreditSummary() {
       setLoading(false);
     }
     fetchSummary();
-  }, []);
+  }, [supabase]);
 
   if (loading) return <div>Carregando créditos…</div>;
   if (!data) return null;
