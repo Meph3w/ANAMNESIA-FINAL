@@ -1,9 +1,9 @@
 import { createSupabaseClient } from "@/utils/supabase/server";
 
-export async function POST(req: Request, { params }: { params: { chatId: string } }) {
-console.log("POST handler params:", params);
+export async function POST(req: Request, context: any) {
+console.log("POST handler context:", context);
   console.log("POST handler request URL:", req.url);
-  const { chatId } = params;
+  const { chatId } = context.params;
   const supabase = await createSupabaseClient();
   const {
     data: { user },
