@@ -1,5 +1,5 @@
-import Content from "@/components/content";
-import ProtectedSidebar from "@/components/protected-sidebar";
+import Content from "../../components/content";
+import ProtectedSidebar from "../../components/protected-sidebar";
 
 export default function ProtectedLayout({
   children,
