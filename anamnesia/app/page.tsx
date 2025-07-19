@@ -1,6 +1,6 @@
-import NextLogo from "@/components/next-logo";
-import { Button } from "@/components/ui/button";
-import UpdateLogo from "@/components/update-logo";
+import NextLogo from "../components/next-logo";
+import { Button } from "../components/ui/button";
+import UpdateLogo from "../components/update-logo";
 import Link from "next/link";
 
 export default function Home() {
