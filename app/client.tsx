@@ -41,6 +41,8 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
     if (!isAuthenticated) {
       setCreditsUsedLast30Days(0);
       setRenewalDays(0);
+      setOriginalPlanCredits(0);
+      setOriginalExtraCredits(0);
       return;
     }
     const fetchCredits = async () => {
@@ -48,7 +50,8 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
       const { data: { user }, error: authError } = await client.auth.getUser();
       if (authError || !user) {
         setCreditsUsedLast30Days(0);
-        setCreditsRemaining(0);
+        setOriginalPlanCredits(0);
+        setOriginalExtraCredits(0);
         setRenewalDays(0);
         return;
       }
@@ -72,10 +75,7 @@ function ClientLayoutContent({ children }: ClientLayoutProps) {
       const usageLast30Days = usageData?.reduce((acc, item) => acc + (item.credits_spent ?? 0), 0) ?? 0;
       setCreditsUsedLast30Days(usageLast30Days);
       // Spend plan credits first, then extras
-      const planRemaining = Math.max(plan - usageLast30Days, 0);
-      const extraRemaining = usageLast30Days > plan
-        ? Math.max(extras - (usageLast30Days - plan), 0)
-        : extras;
+      // Remaining credits calculation removed as unused
       // Calculate days until next monthly reset
       const now = new Date();
       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
