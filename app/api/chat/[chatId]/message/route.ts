@@ -7,7 +7,7 @@ import { createSupabaseClient } from "@/utils/supabase/server";
  */
 export async function POST(
   req: NextRequest,
-  context: any
+  context: { params: { chatId: string } }
 ): Promise<NextResponse> {
   const { chatId } = context.params;
   if (!chatId) {
