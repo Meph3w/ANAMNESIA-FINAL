@@ -5,9 +5,9 @@ import { createSupabaseClient } from "@/utils/supabase/server";
  * POST /api/chat/[chatId]/message
  * Inserts a new message into the specified chat.
  */
-export async function POST(request: NextRequest, context: any) {
+export async function POST(request: NextRequest, { params }: { params: { chatId: string } }): Promise<NextResponse> {
   // Extract chatId from dynamic route parameters
-  const chatId = context.params?.chatId;
+  const chatId = params.chatId;
   if (!chatId) {
     return NextResponse.json({ error: "Invalid chatId" }, { status: 400 });
   }
