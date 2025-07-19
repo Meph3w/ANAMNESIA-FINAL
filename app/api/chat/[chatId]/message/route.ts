@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { AppRouteHandlerFnContext } from "next/dist/server/route-modules/app-route/module";
+
+type MessageRequestBody = {
+  sender: string;
+  content: string;
+};
 import { createSupabaseClient } from "@/utils/supabase/server";
+
 
 /**
  * POST /api/chat/[chatId]/message
  * Inserts a new message into the specified chat.
  */
-export async function POST(request: NextRequest, { params }: { params: { chatId: string } }): Promise<NextResponse> {
+export async function POST(request: NextRequest, ctx: AppRouteHandlerFnContext): Promise<NextResponse> {
   // Extract chatId from dynamic route parameters
-  const chatId = params.chatId;
+  const resolvedParams = await ctx.params!;
+  const chatId = resolvedParams.chatId;
   if (!chatId) {
     return NextResponse.json({ error: "Invalid chatId" }, { status: 400 });
   }
@@ -24,7 +32,7 @@ export async function POST(request: NextRequest, { params }: { params: { chatId:
   }
 
   // Parse and validate request body
-  const body = await request.json();
+  const body = (await request.json()) as MessageRequestBody;
   const { sender, content } = body;
   if (!sender || !content) {
     return NextResponse.json({ error: "Missing sender or content" }, { status: 400 });
