@@ -7,9 +7,9 @@ import { createSupabaseClient } from "@/utils/supabase/server";
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { chatId: string } }
+  context: any
 ): Promise<NextResponse> {
-  const { chatId } = params;
+  const { chatId } = context.params;
   if (!chatId) {
     return NextResponse.json({ error: "Invalid chatId" }, { status: 400 });
   }
