@@ -105,7 +105,6 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
     }
   }, []); 
 
-  // --- Combined useEffect for initial loading --- 
   useEffect(() => {
     let isMounted = true; // Prevent state updates if component unmounts
     setIsLoadingMessages(true); // Start loading messages
@@ -122,11 +121,6 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
             setMessages(fetchedMessages);
             setIsLoadingMessages(false);
 
-            // Trigger initial AI response if exactly one message exists and models are loaded
-            if (fetchedMessages.length === 1 && fetchedMessages[0].sender === 'user') {
-              setHasTriggeredInitialResponse(true); // Set flag immediately
-              triggerInitialResponse(fetchedMessages[0]);
-            }
         }
       })
       .catch(error => {

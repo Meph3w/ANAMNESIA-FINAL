@@ -13,7 +13,6 @@ import {
 import { ContextItem, getUserModelSettings, updateUserSelectedModel } from '@/app/actions';
 import { SettingsModal } from "./settings-modal";
 import { useRouter } from 'next/navigation';
-import { v4 as uuidv4 } from 'uuid';
 import { ContextSelectorModal } from "./context-selector-modal";
 import { createBrowserClient } from '@supabase/ssr';
 import { Session } from '@supabase/supabase-js';
@@ -211,7 +210,7 @@ const [selectedObjective] = useState(objectives[0].id);
       // Continue animation loop
       animationFrameRef.current = requestAnimationFrame(animate);
     }
-  }, [currentPlaceholder, showTabButton, prompt, isModelDropdownOpen, currentPromptIndex]);
+  }, [prompt, isModelDropdownOpen, currentPromptIndex]);
   
   // Start and clean up animation
   useEffect(() => {
