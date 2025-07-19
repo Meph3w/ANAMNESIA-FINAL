@@ -97,7 +97,7 @@ const objectives = [
   { id: 'resumo', label: 'Resumo' },
   { id: 'consultas', label: 'Consultas' }
 ];
-const [selectedObjective, setSelectedObjective] = useState(objectives[0].id);
+const [selectedObjective] = useState(objectives[0].id);
 
   // --- Calculate Attachment Count --- 
   const attachmentCount = (attachedContextItem ? 1 : 0) + (attachedImage ? 1 : 0);
@@ -341,7 +341,7 @@ const [selectedObjective, setSelectedObjective] = useState(objectives[0].id);
     if (!currentPrompt || isSubmitting) return;
 
     setIsSubmitting(true);
-    const newChatId = uuidv4();
+    // const newChatId = uuidv4(); // removed unused variable
     const currentSelectedModel = selectedModel;
 
     try {
@@ -358,7 +358,7 @@ const [selectedObjective, setSelectedObjective] = useState(objectives[0].id);
         })
       });
       const data = await response.json();
-+      console.log("API /api/chat/create response:", response.status, data);
+      // console.log("API /api/chat/create response:", response.status, data);
       if (response.ok && data.chatId) {
         // Clear attachments on successful navigation
         setAttachedContextItem(null);

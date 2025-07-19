@@ -4,8 +4,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ImageIcon, ArrowUp, Check, Loader2, PlusIcon, BookText, XIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { createSupabaseClient } from "@/utils/supabase/client";
-import { useRouter } from 'next/navigation';
 import { getUserModelSettings, updateUserSelectedModel, getMessagesForChat, updateChatName } from '@/app/actions'; // Keep model actions if needed in chat view
 import { SettingsModal } from './settings-modal';
 import { v4 as uuidv4 } from 'uuid';
@@ -87,21 +85,7 @@ export function ChatInterface({ chatId }: ChatInterfaceProps) {
   ];
   const [selectedObjective, setSelectedObjective] = useState(objectives[0].id);
 
-  // Authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  // Check auth status on mount and listen for changes
-  useEffect(() => {
-    const supabase = createSupabaseClient();
-    async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-    }
-    checkAuth();
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session);
-    });
-    return () => { authListener?.subscription.unsubscribe(); };
-  }, []);
+[REMOVE]
 
   // --- Calculate Attachment Count --- 
   const attachmentCount = (attachedContextItem ? 1 : 0) + (attachedImage ? 1 : 0);

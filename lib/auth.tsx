@@ -57,7 +57,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       refreshSubscription();
     }
-  }, [pathname]);
+  }, [pathname, router]);
 
   useEffect(() => {
     const client = createSupabaseClient();
