@@ -1,8 +1,5 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  ignoreBuildErrors: true,
-  ignoreDuringBuilds: true,
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

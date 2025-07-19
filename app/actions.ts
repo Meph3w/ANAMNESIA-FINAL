@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { encodedRedirect } from "@/utils/redirect";
 import { revalidatePath } from "next/cache";
 import { createUpdateClient } from "@/utils/update/server";
-import { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 // Assuming MessageParam might not be found by linter yet
 // import { MessageParam } from '@anthropic-ai/sdk/resources/messages'; 
 
@@ -84,7 +84,6 @@ export const signOutAction = async () => {
 };
 
 export async function createCheckout(priceId: string) {
-  "use server";
   
   const client = await createUpdateClient();
   const { data, error } = await client.billing.createCheckoutSession(
