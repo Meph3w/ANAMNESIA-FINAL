@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ProductWithPrices } from "@updatedev/js";
 import { Button } from "@/components/ui/button";
-import PricingCard from "@/components/pricing-card";
+import PricingCard from "./pricing-card";
 import { cn } from "@/utils/styles";
 
 export default function PricingContent({
