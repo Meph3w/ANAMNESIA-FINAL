@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { AppRouteHandlerFnContext } from "next/dist/server/route-modules/app-route/module";
 
 type MessageRequestBody = {
   sender: string;
@@ -12,10 +11,9 @@ import { createSupabaseClient } from "@/utils/supabase/server";
  * POST /api/chat/[chatId]/message
  * Inserts a new message into the specified chat.
  */
-export async function POST(request: NextRequest, ctx: AppRouteHandlerFnContext): Promise<NextResponse> {
+export async function POST(request: NextRequest, { params }: { params: { chatId: string } }): Promise<NextResponse> {
   // Extract chatId from dynamic route parameters
-  const resolvedParams = await ctx.params!;
-  const chatId = resolvedParams.chatId;
+  const chatId = params.chatId;
   if (!chatId) {
     return NextResponse.json({ error: "Invalid chatId" }, { status: 400 });
   }
