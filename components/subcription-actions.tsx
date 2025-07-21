@@ -17,7 +17,7 @@ export default function SubscriptionActions({
 
   async function handleCancelSubscription(id: string) {
     setIsLoading(true);
-    const client = createUpdateClient();
+    const client = await createUpdateClient();
     await client.billing.updateSubscription(id, {
       cancel_at_period_end: true,
     });
@@ -27,7 +27,7 @@ export default function SubscriptionActions({
 
   async function handleReactivateSubscription(id: string) {
     setIsLoading(true);
-    const client = createUpdateClient();
+    const client = await createUpdateClient();
     await client.billing.updateSubscription(id, {
       cancel_at_period_end: false,
     });
