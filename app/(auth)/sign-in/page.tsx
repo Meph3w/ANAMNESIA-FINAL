@@ -1,8 +1,9 @@
 "use client";
+/* eslint-disable @next/next/no-html-link-for-pages */
 
 import { signInAction } from "@/app/actions";
 import { Input } from "@/components/ui/input";
-import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { Eye, AlertCircle } from "lucide-react";
@@ -43,7 +44,7 @@ export default function SignIn() {
   return (
     <>
       <div className="fixed inset-0 bg-white" />
-      <Link 
+      <a 
         href="/"
         className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
         aria-label="Close and return to homepage"
@@ -51,7 +52,7 @@ export default function SignIn() {
         <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
-      </Link>
+      </a>
       <div className="min-h-screen w-full grid place-items-center relative">
         <div className="absolute top-4 left-4 pl-2">
           <span className="font-bold text-2xl text-zinc-900 cursor-default">AnamnesIA</span>
@@ -120,9 +121,9 @@ export default function SignIn() {
                     </button>
                   </div>
                   <div className="text-right">
-                    <Link href="/forgot-password" className="text-sm text-gray-500 hover:text-gray-700">
+                    <a href="/forgot-password" className="text-sm text-gray-500 hover:text-gray-700">
                       Esqueceu a sua senha?
-                    </Link>
+                    </a>
                   </div>
                 </div>
               )}
@@ -137,9 +138,9 @@ export default function SignIn() {
 
             <div className="text-center text-sm">
               <span className="text-gray-600">Não tem uma conta? </span>
-              <Link href="/sign-up" className="text-zinc-900 hover:underline font-normal">
+              <a href="/sign-up" className="text-zinc-900 hover:underline font-normal">
                 Criar agora
-              </Link>
+              </a>
             </div>
 
             <div className="relative">

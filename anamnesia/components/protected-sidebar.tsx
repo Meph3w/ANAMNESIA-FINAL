@@ -1,5 +1,5 @@
-import InPageSidebar from "@/components/in-page-sidebar";
-import { createUpdateClient } from "@/utils/update/server";
+import InPageSidebar from "./in-page-sidebar";
+import { createUpdateClient } from "../../utils/update/server";
 
 export default async function ProtectedSidebar() {
   const client = await createUpdateClient();
